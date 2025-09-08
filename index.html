@@ -22,7 +22,7 @@ h1 { margin-bottom:20px; font-size:32px; font-weight:bold;}
 </head>
 <body>
 
-<h1>陳萬龍診所叫號系統</h1>
+<h1>陳萬龍診所診所叫號系統</h1>
 
 <div id="number" class="number-card">
   <span class="digit">0</span>
@@ -30,7 +30,7 @@ h1 { margin-bottom:20px; font-size:32px; font-weight:bold;}
   <span class="digit">0</span>
 </div>
 
-<div class="marquee"><span>公告：請保持安靜｜診間內請關閉手機｜謝謝您的配合</span></div>
+<div class="marquee"><span>公告：此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。｜謝謝您的配合</span></div>
 
 <a href="https://你的GAS預約網址" target="_blank" class="btn">線上預約</a>
 
@@ -53,7 +53,7 @@ function showPopup(msg){
 
 function speakNumber(number){
   if('speechSynthesis' in window){
-    const msg = new SpeechSynthesisUtterance(""+number+" 號請進診間");
+    const msg = new SpeechSynthesisUtterance(" "+number+" 號請進診間");
     window.speechSynthesis.speak(msg);
   }
 }
@@ -75,6 +75,7 @@ function animateNumber(newNumber){
 
 async function fetchNumber(){
   try{
+    // 換成你新的只讀 GAS Web App URL
     const res=await fetch("https://script.google.com/macros/s/AKfycbz7rlqnUN6lueTAon-u3lOH_dF8KmwKen1QAtv7P0dtvxBN9prxHilq7oebzdVkJEzr/exec");
     const data=await res.json();
     let currentNumber=formatNumber(data.number);
@@ -87,9 +88,12 @@ async function fetchNumber(){
   }catch(e){console.error("抓號碼失敗",e);}
 }
 
+// 每 5 秒抓一次號碼
 setInterval(fetchNumber,5000);
 fetchNumber();
 </script>
 
 </body>
 </html>
+
+  
