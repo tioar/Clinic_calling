@@ -7,14 +7,26 @@
 <style>
 body {
   font-family:"Microsoft JhengHei",sans-serif;
-  background:#1e3a8a; /* 藍色背景 */
+  background:#1e3a8a;
   text-align:center;
   margin:0;
   padding:20px;
   color:white;
 }
+
+/* 中間卡片 */
+.card {
+  background:#93c5fd; /* 淺藍 */
+  border-radius:20px;
+  padding:30px;
+  max-width:600px;
+  margin:0 auto;
+  box-shadow:0 6px 20px rgba(0,0,0,0.3);
+}
+
+/* 標題 */
 h1 {
-  font-size:32px;
+  font-size:28px;
   margin-bottom:20px;
 }
 
@@ -23,13 +35,14 @@ h1 {
   display:flex;
   justify-content:center;
   gap:20px;
+  margin:20px 0;
 }
 .digit {
   position: relative;
   width:80px;
   height:100px;
   background:white;
-  color:#e63946; /* 紅字 */
+  color:#e63946;
   font-size:72px;
   font-weight:bold;
   border-radius:16px;
@@ -72,50 +85,77 @@ h1 {
 @keyframes marquee {0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
 
 /* 按鈕 */
-.btn {display:inline-block;margin-top:30px;padding:15px 30px;border-radius:25px;background:#22c55e;color:white;font-size:20px;text-decoration:none;}
+.btn {
+  display:inline-block;
+  margin:10px 10px 0 10px;
+  padding:12px 28px;
+  border-radius:25px;
+  background:#22c55e;
+  color:white;
+  font-size:18px;
+  text-decoration:none;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  transition:background 0.3s;
+}
+.btn:hover{background:#16a34a;}
 
 /* 注意事項 */
-.note-box {margin:30px auto;padding:20px;background:#3b82f6;border-radius:16px;width:90%;font-size:18px;line-height:1.6;}
+.note-box {
+  margin:20px auto;
+  padding:15px;
+  background:#3b82f6;
+  border-radius:16px;
+  width:90%;
+  font-size:16px;
+  line-height:1.6;
+}
 
 /* 門診表 */
-.schedule {margin-top:30px;max-width:90%;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+.schedule {
+  margin-top:20px;
+  max-width:90%;
+  border-radius:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
 </style>
 </head>
 <body>
 
 <h1>陳萬龍診所叫號系統</h1>
 
-<div id="number" class="number-card">
-  <div class="digit">0</div>
-  <div class="digit">0</div>
-  <div class="digit">0</div>
+<div class="card">
+  <div id="number" class="number-card">
+    <div class="digit">0</div>
+    <div class="digit">0</div>
+    <div class="digit">0</div>
+  </div>
+
+  <div class="marquee">
+    <span>公告：此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。｜謝謝您的配合</span>
+  </div>
+
+  <div>
+    <button class="btn" id="voiceBtn">開啟語音提醒</button>
+    <a href="https://tioar.github.io/clinic-reservation/index.html" target="_blank" class="btn">線上預約</a>
+  </div>
+
+  <div class="note-box">
+    此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。
+  </div>
+
+  <img src="images/schedule.png" alt="門診時間表" class="schedule">
 </div>
-
-<div class="marquee">
-  <span>公告：此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。｜謝謝您的配合</span>
-</div>
-
-<a href="https://tioar.github.io/clinic-reservation/index.html" target="_blank" class="btn">線上預約</a>
-
-<div class="note-box">
-此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。
-</div>
-
-<img src="images/schedule.png" alt="門診時間表" class="schedule">
 
 <script>
 let lastNumber = '000';
 let canSpeak = false;
 
-// 點擊頁面啟用語音
-document.body.addEventListener('click',()=>{canSpeak=true;}, {once:true});
-
-function speakNumber(number){
-  if(canSpeak && 'speechSynthesis' in window){
-    const msg = new SpeechSynthesisUtterance(number + '號請進診間');
-    window.speechSynthesis.speak(msg);
-  }
-}
+// 點擊「開啟語音提醒」按鈕啟用語音
+document.getElementById('voiceBtn').addEventListener('click', ()=>{
+  canSpeak = true;
+  alert("語音提醒已啟用，未來號碼更新會自動播報！");
+});
 
 // 翻頁動畫
 function animateDigit(digitElem, newNum){
@@ -149,10 +189,17 @@ function updateNumber(newNumber){
 // 格式化數字
 function formatNumber(num){ return String(num).padStart(3,'0'); }
 
+// 播報號碼
+function speakNumber(number){
+  if(canSpeak && 'speechSynthesis' in window){
+    const msg = new SpeechSynthesisUtterance(number + '號請進診間');
+    window.speechSynthesis.speak(msg);
+  }
+}
+
 // 抓號碼
 async function fetchNumber(){
   try{
-    // 你的只讀 GAS 網址
     const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
     const data = await res.json();
     const currentNumber = formatNumber(data.number);
