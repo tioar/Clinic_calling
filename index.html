@@ -10,17 +10,16 @@
 
 <style>
   :root{
-    /* 專業藍紫系 */
+    /* 主題色（先前版本一致） */
     --primary:#35579A;   /* 深藍 */
-    --teal:#3A8EA7;      /* 青藍 */
-    --purple:#6B5AAE;    /* 紫 */
+    --purple:#6B5AAE;    /* 紫（跑馬燈背景可改這個） */
     --soft:#A5B8D0;      /* 淺藍 */
     --beige:#D8C0AD;     /* 米膚 */
 
-    /* ← 改這裡：Pop-out 珊瑚橘 */
-    --accent:#F37363;
+    /* Pop-out 綠色（色塊） */
+    --accent:#6db337;
 
-    --bg:#F5EFE8;        /* 背景(淡米膚) */
+    --bg:#F5EFE8;        /* 背景 */
     --card:#FFFFFF;      /* 卡片白 */
     --note:#F2F6FB;      /* 說明框淡藍 */
     --digit-red:#DC2626; /* 號碼紅 */
@@ -45,16 +44,37 @@
     border:3px solid var(--primary);
   }
 
+  /* 🟣 無縫循環跑馬燈（滑過/長按暫停） */
   .marquee{
-    background:var(--purple); color:#fff;
+    --gap: 2rem;     /* 兩段內容間距 */
+    --speed: 45s;    /* 速度：越小越快 */
+    background:var(--purple);
+    color:#fff;
     border-radius:18px;
-    padding:12px 0; margin:0 auto 10px;
-    overflow:hidden; white-space:nowrap;
+    padding:12px 0;
+    margin:0 auto 10px;
+    overflow:hidden;
+    white-space:nowrap;
+    user-select:none;
+    touch-action:manipulation;
   }
-  .marquee span{ display:inline-block; padding-left:100%; animation:marquee 45s linear infinite; }
-  .marquee:hover span{ animation-play-state:paused; }
-  @keyframes marquee{ 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
+  .marquee__track{
+    display:inline-flex;
+    align-items:center;
+    width:max-content;
+    animation:marquee-loop var(--speed) linear infinite;
+  }
+  .marquee__track > span{
+    padding-right:var(--gap);
+    flex-shrink:0;
+  }
+  .marquee:hover .marquee__track{ animation-play-state:paused; }
+  @keyframes marquee-loop{
+    from{ transform:translateX(0); }
+    to  { transform:translateX(-50%); } /* 走一半＝第二段無縫接上 */
+  }
 
+  /* Logo：加大、無陰影圓角，貼合白底 */
   .logo-wrap{ margin:10px 0 0; }
   .logo{
     height:clamp(120px, 22vw, 200px);
@@ -65,6 +85,7 @@
   h1{ margin:12px 0; color:var(--primary); letter-spacing:1px; }
   .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
 
+  /* 號碼卡：白底紅字（Manrope，等寬數字） */
   .number-display{
     display:flex; justify-content:center; gap:clamp(8px,2vw,16px);
     margin-bottom:16px; flex-wrap:nowrap;
@@ -74,7 +95,7 @@
     height:clamp(92px, 28vw, 140px);
     background:#fff; color:var(--digit-red);
     font-family:'Manrope',sans-serif;
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric:tabular-nums;
     font-size:clamp(56px,16vw,100px);
     font-weight:800; line-height:1;
     border-radius:28px;
@@ -91,6 +112,7 @@
   @keyframes flipTop{0%{transform:rotateX(0)}100%{transform:rotateX(180deg)}}
   @keyframes flipBottom{0%{transform:rotateX(-180deg)}100%{transform:rotateX(0)}}
 
+  /* 說明區 */
   .note{
     background:var(--note);
     padding:16px 20px;
@@ -102,6 +124,7 @@
   }
   .note p{ margin:.35em 0; }
 
+  /* 飄帶（注意事項下方） */
   .palette{
     height:8px; border-radius:6px; margin:8px auto 16px; width:min(560px,90%);
     background:
@@ -139,10 +162,15 @@
 
 <body>
   <div class="container">
-    <div class="marquee">
-      <span>陳萬龍診所門診時間：早診 08:00–11:30（最晚報到10:30）；午診 14:00–17:00（最晚報到16:00）；晚診 18:00–20:30（最晚報到20:00）。請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
+    <!-- 無縫循環跑馬燈 -->
+    <div class="marquee" aria-label="診所訊息跑馬燈">
+      <div class="marquee__track" id="marqueeTrack">
+        <span>陳萬龍診所門診時間：早診 08:00–11:30（最晚報到10:30）；午診 14:00–17:00（最晚報到16:00）；晚診 18:00–20:30（最晚報到20:00）。請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
+        <span aria-hidden="true">陳萬龍診所門診時間：早診 08:00–11:30（最晚報到10:30）；午診 14:00–17:00（最晚報到16:00）；晚診 18:00–20:30（最晚報到20:00）。請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
+      </div>
     </div>
 
+    <!-- Logo -->
     <div class="logo-wrap">
       <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
     </div>
@@ -161,12 +189,26 @@
       <p>♦︎ 門診可能視現場狀況提前停止掛號，如有疑問請來電診所(03)5152971。</p>
     </div>
 
+    <!-- 飄帶 -->
     <div class="palette" aria-hidden="true"></div>
 
     <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
   </div>
 
   <script>
+    /* 跑馬燈：行動裝置「長按暫停」 */
+    (function(){
+      const marquee = document.querySelector('.marquee');
+      const track = document.getElementById('marqueeTrack');
+      const pause = () => track.style.animationPlayState = 'paused';
+      const run   = () => track.style.animationPlayState = 'running';
+      marquee.addEventListener('pointerdown', pause);
+      marquee.addEventListener('pointerup', run);
+      marquee.addEventListener('pointerleave', run);
+      marquee.addEventListener('pointercancel', run);
+    })();
+
+    /* 圖片備援：jpg → png → GitHub Raw */
     (function(){
       const logo = document.getElementById('clinicLogo');
       const logoFallbacks = [
@@ -179,9 +221,18 @@
         if(li < logoFallbacks.length){ this.src = logoFallbacks[li++]; }
         else { this.style.display='none'; }
       };
+
+      const sch = document.getElementById('scheduleImg');
+      const schFallbacks = ['https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'];
+      let si=0;
+      sch.onerror = function(){
+        if(si < schFallbacks.length){ this.src = schFallbacks[si++]; }
+        else { this.style.display='none'; }
+      };
     })();
 
     let lastNumber='000';
+
     function showPopup(msg){
       const popup=document.createElement('div');
       popup.className='popup';
@@ -220,13 +271,15 @@
       }catch(err){ console.error('抓號碼失敗', err); }
     }
 
+    /* 台灣時間 + 星期：YYYY/MM/DD (週) HH:MM:SS */
     function updateTWTime(){
       const el=document.getElementById('twTime');
       const now = new Date();
-      const zt = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
-      const pad = n => String(n).padStart(2,'0');
+      const tw = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
       const wMap = ['日','一','二','三','四','五','六'];
-      el.textContent = `${zt.getFullYear()}/${pad(zt.getMonth()+1)}/${pad(zt.getDate())} (${wMap[zt.getDay()]}) ${pad(zt.getHours())}:${pad(zt.getMinutes())}:${pad(zt.getSeconds())}`;
+      el.textContent =
+        `${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())} (${wMap[tw.getDay()]}) `+
+        `${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
     }
 
     fetchNumber(); setInterval(fetchNumber,5000);
