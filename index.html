@@ -1,222 +1,236 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>陳萬龍診所看診進度</title>
 
-<!-- 字體：Noto Sans TC（內文字體）＋ Orbitron（號碼字體） -->
+<!-- 字體：內文 Noto Sans TC；號碼 Orbitron -->
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@700;800&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    --primary:#0F4C81;   /* 主色 */
-    --secondary:#A5B8D0; /* 副色 */
-    --accent:#7EC845;    /* 彈出提示色 */
-    --bg:#D8C0AD;        /* 背景色 */
-    --card:#F0EDE5;      /* 卡片背景 */
+    --primary:#0F4C81;   /* 主色：Classic Blue */
+    --secondary:#A5B8D0; /* 副色：Cashmere Blue */
+    --accent:#7EC845;    /* 提示：Jasmine Green */
+    --bg:#F7F2EC;        /* 畫面背景（更清爽） */
+    --card:#FFFFFF;      /* 卡片背景改白 */
+    --note:#F0F5FA;      /* 提示框淡藍 */
+    --digit-red:#DC2626; /* 數字紅 */
   }
 
+  /* 版面 */
   body{
     font-family:'Noto Sans TC',sans-serif;
     background:var(--bg);
+    margin:0; padding:40px 16px;
     display:flex; justify-content:center;
-    padding:40px 0; margin:0;
     color:#1c1c1c;
   }
-
   .container{
-    max-width:800px; width:100%;
+    width:min(960px,100%);
     background:var(--card);
-    border-radius:24px;
-    padding:32px 24px;
+    border-radius:28px;
+    padding:28px 20px 32px;
     text-align:center;
-    box-shadow:0 8px 24px rgba(0,0,0,0.12);
-    border:4px solid var(--primary);
+    box-shadow:
+      0 8px 30px rgba(15,76,129,0.10),
+      0 2px 0 0 var(--secondary) inset;
+    border:3px solid var(--primary);
   }
 
-  /* 跑馬燈 */
+  /* 跑馬燈（放慢 + 可暫停） */
   .marquee{
-    background:var(--primary); color:white;
-    border-radius:12px;
-    padding:10px 0; margin-bottom:24px;
+    background:var(--primary);
+    color:#fff;
+    border-radius:14px;
+    padding:10px 0;
+    margin:0 auto 10px;
     overflow:hidden; white-space:nowrap;
+    position:relative;
   }
   .marquee span{
     display:inline-block;
     padding-left:100%;
-    animation:marquee 12s linear infinite;
+    animation:marquee 35s linear infinite; /* 速度放慢 */
   }
+  .marquee:hover span{ animation-play-state:paused; }
   @keyframes marquee{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-100%);}
+    0%{ transform:translateX(0); }
+    100%{ transform:translateX(-100%); }
+  }
+
+  /* LOGO */
+  .logo-wrap{ margin:10px 0 18px; }
+  .logo{
+    height:44px; max-width:260px; object-fit:contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.08));
   }
 
   h1{
-    font-weight:700; margin:0 0 8px;
+    margin:6px 0 6px;
     color:var(--primary);
+    letter-spacing:1px;
   }
   .now-time{
+    color:#59779a;
     font-weight:700;
-    color:var(--secondary);
-    margin-bottom:24px;
+    margin-bottom:18px;
   }
 
-  /* 翻頁鐘卡片（號碼） */
+  /* 號碼翻頁卡片：白底紅字 */
   .number-display{
     display:flex; justify-content:center; gap:12px;
     margin-bottom:16px;
   }
   .digit-card{
-    width:90px; height:120px;
-    background:var(--card);
-    color:var(--primary);
-    font-family:'Orbitron', sans-serif;
-    font-size:90px; font-weight:800;
-    border-radius:16px;
+    width:100px; height:130px;
+    background:#fff;               /* 白底 */
+    color:var(--digit-red);        /* 紅字 */
+    font-family:'Orbitron',sans-serif;
+    font-size:96px; font-weight:800;
+    border-radius:20px;
     display:flex; align-items:center; justify-content:center;
-    position:relative;
-    perspective:400px;
-    overflow:hidden;
-    box-shadow:inset 0 0 0 2px var(--secondary);
+    position:relative; perspective:400px; overflow:hidden;
+    box-shadow:
+      0 10px 24px rgba(15,76,129,.08),
+      inset 0 0 0 3px var(--secondary);   /* 淡藍描邊 */
   }
   .digit-card .current, .digit-card .next{
-    position:absolute; width:100%; height:100%;
-    left:0; top:0;
+    position:absolute; inset:0;
     display:flex; align-items:center; justify-content:center;
     backface-visibility:hidden;
   }
   .digit-card .next{ transform:rotateX(-180deg); }
+  .flip .current{ animation:flipTop .5s forwards; }
+  .flip .next{ animation:flipBottom .5s forwards; }
+  @keyframes flipTop{ 0%{transform:rotateX(0)}100%{transform:rotateX(180deg)}}
+  @keyframes flipBottom{0%{transform:rotateX(-180deg)}100%{transform:rotateX(0)}}
 
-  .flip .current{ animation:flipTop 0.5s forwards; }
-  .flip .next{ animation:flipBottom 0.5s forwards; }
-
-  @keyframes flipTop{
-    0%{ transform:rotateX(0deg);}
-    100%{ transform:rotateX(180deg);}
-  }
-  @keyframes flipBottom{
-    0%{ transform:rotateX(-180deg);}
-    100%{ transform:rotateX(0deg);}
-  }
-
+  /* 說明區 */
   .note{
-    background:rgba(165,184,208,0.25);
+    background:var(--note);
     padding:16px 20px;
-    border-radius:16px; margin:16px 0;
-    box-shadow:0 4px 12px rgba(0,0,0,0.08);
-    font-weight:600; color:var(--primary);
+    border-radius:16px; margin:16px auto 4px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+    color:#274a6b; font-weight:600;
+    width:min(760px,100%);
   }
 
+  /* 門診表圖片 */
   .schedule{
-    margin-top:24px; max-width:100%;
-    border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    margin-top:18px; max-width:100%;
+    border-radius:14px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
   }
 
-  /* 彈出提示 */
+  /* 彈出提示（綠色） */
   .popup{
     position:fixed; top:20px; right:20px;
     background:var(--accent); color:white;
-    padding:16px 28px; border-radius:50px;
-    font-size:20px; z-index:9999;
-    opacity:0; transform:translateY(-20px);
+    padding:14px 22px; border-radius:999px;
+    font-size:20px; z-index:9999; font-weight:800;
+    opacity:0; transform:translateY(-18px);
     animation:fadeInOut 3s forwards;
-    box-shadow:0 6px 18px rgba(0,0,0,.18);
-    font-weight:800;
+    box-shadow:0 10px 24px rgba(0,0,0,.18);
   }
   @keyframes fadeInOut{
-    0%{opacity:0; transform:translateY(-20px);}
-    10%{opacity:1; transform:translateY(0);}
-    90%{opacity:1; transform:translateY(0);}
-    100%{opacity:0; transform:translateY(-20px);}
+    0%{opacity:0; transform:translateY(-18px)}
+    10%{opacity:1; transform:translateY(0)}
+    90%{opacity:1; transform:translateY(0)}
+    100%{opacity:0; transform:translateY(-18px)}
   }
 </style>
 </head>
+
 <body>
-<div class="container">
-  <div class="marquee"><span>陳萬龍診所門診時間：早診 8:00~11:30（最晚報到時間10:30）；午診 14：00~17：00（最晚報到時間16:00）；晚診 18：00~20：30（最晚報到時間20:00) 請有預約掛號者在最晚報到時間前到場報到，逾時視同放棄，會釋出名額給現場排隊掛號。</span></div>
+  <div class="container">
+    <div class="marquee">
+      <span>陳萬龍診所門診時間：早診 08:00–11:30（最晚報到10:30）；午診 14:00–17:00（最晚報到16:00）；晚診 18:00–20:30（最晚報到20:00）。請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
+    </div>
 
-  <h1>目前門診號碼</h1>
-  <div class="now-time" id="twTime">—</div>
+    <!-- 診所 LOGO（請把 src 換成你的 LOGO 圖檔連結） -->
+    <div class="logo-wrap">
+      <img class="logo" src="logo1.png" alt="陳萬龍診所 LOGO">
+    </div>
 
-  <div class="number-display" id="numberDisplay">
-    <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
-    <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
-    <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
+    <h1>目前門診號碼</h1>
+    <div class="now-time" id="twTime">—</div>
+
+    <div class="number-display" id="numberDisplay">
+      <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
+      <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
+      <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
+    </div>
+
+    <div class="note">
+      雲端號碼僅供參考，實際叫號以現場為準。每位患者約 3–5 分鐘，請提前到現場並在可看到燈號的位置等候以免過號。
+      門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)5152971。
+    </div>
+
+    <img src="https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png" alt="門診時間表" class="schedule">
   </div>
 
-  <div class="note">雲端號碼僅供參考，實際叫號以現場為準。每位患者預估時間3~5分鐘，請提前到現場聽得到及看得到燈號的位置等候以免過號。門診時間依現場狀況可能提前停止掛號，如有疑慮歡迎來電詢問現場狀況(03)5152971</div>
+  <script>
+    let lastNumber='000';
 
-  <!-- 依需求刪除的兩個按鈕（刷新/預約）已移除 -->
-
-  <img src="https://raw.githubusercontent.com/你的帳號/你的repo/main/schedule.png" alt="門診時間表" class="schedule">
-</div>
-
-<script>
-let lastNumber='000';
-
-/* 顯示彈出提示 */
-function showPopup(msg){
-  const popup=document.createElement('div');
-  popup.className='popup';
-  popup.innerText=msg;
-  document.body.appendChild(popup);
-  setTimeout(()=>popup.remove(),3000);
-}
-
-/* 3 碼格式化 */
-function formatNumber(num){ return String(num).padStart(3,'0'); }
-
-/* 翻頁動畫更新數字 */
-function animateNumber(newNumber){
-  const digits=document.querySelectorAll('#numberDisplay .digit-card');
-  newNumber.split('').forEach((d,i)=>{
-    const card = digits[i];
-    const current = card.querySelector('.current');
-    const next = card.querySelector('.next');
-    if(current.innerText!==d){
-      next.innerText=d;
-      card.classList.add('flip');
-      setTimeout(()=>{
-        current.innerText=d;
-        card.classList.remove('flip');
-      },500);
+    /* 彈出提示 */
+    function showPopup(msg){
+      const popup=document.createElement('div');
+      popup.className='popup';
+      popup.innerText=msg;
+      document.body.appendChild(popup);
+      setTimeout(()=>popup.remove(),3000);
     }
-  });
-}
 
-/* 叫號資料來源 */
-async function fetchNumber(){
-  try{
-    const res=await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
-    const data=await res.json();
-    let currentNumber=formatNumber(data.number);
-    if(currentNumber!==lastNumber){
-      animateNumber(currentNumber);
-      showPopup(`請 ${currentNumber} 號進診間看診`);
-      lastNumber=currentNumber;
+    const pad3 = n => String(n).padStart(3,'0');
+
+    /* 翻頁動畫 */
+    function animateNumber(newNumber){
+      const digits=document.querySelectorAll('#numberDisplay .digit-card');
+      newNumber.split('').forEach((d,i)=>{
+        const card = digits[i];
+        const cur = card.querySelector('.current');
+        const nxt = card.querySelector('.next');
+        if(cur.innerText!==d){
+          nxt.innerText=d;
+          card.classList.add('flip');
+          setTimeout(()=>{ cur.innerText=d; card.classList.remove('flip'); },500);
+        }
+      });
     }
-  }catch(e){console.error("抓號碼失敗",e);}
-}
 
-/* 顯示台灣時間（到秒） */
-function updateTWTime(){
-  const el=document.getElementById('twTime');
-  const now=new Date();
-  el.textContent = now.toLocaleString('zh-TW',{
-    timeZone:'Asia/Taipei',
-    year:'numeric', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit', second:'2-digit',
-    hour12:false
-  });
-}
+    /* 叫號資料來源 */
+    async function fetchNumber(){
+      try{
+        const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
+        const data = await res.json();
+        const current = pad3(data.number);
+        if(current!==lastNumber){
+          animateNumber(current);
+          showPopup(`請 ${current} 號進診間看診`);
+          lastNumber=current;
+        }
+      }catch(err){ console.error('抓號碼失敗', err); }
+    }
 
-/* 啟動輪詢與時鐘 */
-setInterval(fetchNumber,5000);
-fetchNumber();
+    /* 台灣時間（到秒） */
+    function updateTWTime(){
+      const el=document.getElementById('twTime');
+      const now=new Date();
+      el.textContent = now.toLocaleString('zh-TW',{
+        timeZone:'Asia/Taipei',
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit',
+        hour12:false
+      });
+    }
 
-updateTWTime();
-setInterval(updateTWTime,1000);
-</script>
+    /* 啟動 */
+    fetchNumber();
+    setInterval(fetchNumber, 5000);
+    updateTWTime();
+    setInterval(updateTWTime, 1000);
+  </script>
 </body>
 </html>
