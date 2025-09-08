@@ -10,17 +10,18 @@
 
 <style>
   :root{
-    /* 紫系主題（依你的色帶） */
-    --primary:#6B5AAE;   /* 紫 */
-    --blue:#35579A;      /* 藍 */
+    /* 專業紫系（依你提供的色帶） */
+    --primary:#35579A;   /* 深藍 */
     --teal:#3A8EA7;      /* 青藍 */
-    --soft:#C7D1E3;      /* 淺藍 */
+    --purple:#6B5AAE;    /* 紫 */
+    --soft:#A5B8D0;      /* 淺藍 */
+    --beige:#D8C0AD;     /* 米膚 */
 
     --accent:#7EC845;    /* 提示綠 */
-    --bg:#F4F2F8;        /* 背景淡紫灰 */
+    --bg:#F5EFE8;        /* 背景(淡米膚) */
     --card:#FFFFFF;      /* 卡片白 */
-    --note:#EEF3FA;      /* 說明框淡藍 */
-    --digit-red:#DC2626; /* 數字紅 */
+    --note:#F2F6FB;      /* 說明框淡藍 */
+    --digit-red:#DC2626; /* 號碼紅 */
   }
 
   *{ box-sizing:border-box; }
@@ -42,38 +43,38 @@
     border:3px solid var(--primary);
   }
 
-  /* 跑馬燈（紫） ─ 放慢、可 hover 暫停 */
+  /* 跑馬燈（放慢，可 hover 暫停） */
   .marquee{
-    background:var(--primary); color:#fff;
+    background:var(--purple); color:#fff;
     border-radius:18px;
-    padding:12px 0; margin:0 auto 8px;
+    padding:12px 0; margin:0 auto 10px;
     overflow:hidden; white-space:nowrap;
   }
-  .marquee span{
-    display:inline-block; padding-left:100%;
-    animation:marquee 45s linear infinite;
-  }
+  .marquee span{ display:inline-block; padding-left:100%; animation:marquee 45s linear infinite; }
   .marquee:hover span{ animation-play-state:paused; }
   @keyframes marquee{ 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
 
-  /* LOGO：放大、無陰影、無圓角，與白底融合 */
-  .logo-wrap{ margin:10px 0 12px; }
+  /* LOGO：放大、無陰影，與白底融合 */
+  .logo-wrap{ margin:6px 0 8px; }
   .logo{
-    height:clamp(120px, 24vw, 200px);   /* 放大 */
-    max-width:80vw; object-fit:contain;
-    /* 無陰影、無邊框、無圓角 */
-    filter:none; border:none; border-radius:0;
-    background:#fff; /* 若圖檔周圍是白底可自然融合 */
-    display:inline-block;
+    height:clamp(68px, 14vw, 110px);
+    max-width:82vw; object-fit:contain;
+    filter:none; border:none; border-radius:0; background:#fff;
   }
 
-  h1{
-    margin:6px 0 6px; color:var(--blue);
-    letter-spacing:1px;
+  /* 調色帶（小、不搶戲） */
+  .palette{
+    height:8px; border-radius:6px; margin:10px auto 12px; width:min(560px,90%);
+    background:
+      linear-gradient(to right,
+        var(--beige) 0 22%,
+        var(--accent) 22% 45%,
+        var(--primary) 45% 82%,
+        var(--soft) 82% 100%);
   }
-  .now-time{
-    color:#6b7fa6; font-weight:700; margin-bottom:18px;
-  }
+
+  h1{ margin:6px 0 6px; color:var(--primary); letter-spacing:1px; }
+  .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
 
   /* 號碼卡：白底紅字（Manrope，等寬數字） */
   .number-display{
@@ -85,20 +86,18 @@
     height:clamp(92px, 28vw, 140px);
     background:#fff; color:var(--digit-red);
     font-family:'Manrope',sans-serif;
-    font-variant-numeric: tabular-nums; /* 固定字寬數字 */
+    font-variant-numeric: tabular-nums;
     font-size:clamp(56px,16vw,100px);
     font-weight:800; line-height:1;
     border-radius:28px;
     display:flex; align-items:center; justify-content:center;
     position:relative; perspective:400px; overflow:hidden;
     box-shadow:
-      0 10px 24px rgba(107,90,174,.08),
+      0 10px 24px rgba(53,87,154,.08),
       inset 0 0 0 3px var(--soft);
   }
   .digit-card .current, .digit-card .next{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    backface-visibility:hidden;
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; backface-visibility:hidden;
   }
   .digit-card .next{ transform:rotateX(-180deg); }
   .flip .current{ animation:flipTop .5s forwards; }
@@ -114,8 +113,7 @@
     margin:16px auto 6px;
     box-shadow:0 4px 12px rgba(0,0,0,0.06);
     color:#274a6b; font-weight:600;
-    width:min(760px,100%);
-    text-align:center;
+    width:min(760px,100%); text-align:center;
   }
   .note p{ margin:.35em 0; }
 
@@ -151,10 +149,13 @@
       <span>陳萬龍診所門診時間：早診 08:00–11:30（最晚報到10:30）；午診 14:00–17:00（最晚報到16:00）；晚診 18:00–20:30（最晚報到20:00）。請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
     </div>
 
-    <!-- LOGO（大一點，無陰影） -->
+    <!-- LOGO（放大、無陰影） -->
     <div class="logo-wrap">
       <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
     </div>
+
+    <!-- 細緻的四色調色帶 -->
+    <div class="palette" aria-hidden="true"></div>
 
     <h1>目前看診號碼</h1>
     <div class="now-time" id="twTime">—</div>
@@ -166,35 +167,33 @@
     </div>
 
     <div class="note">
-      <p>🔸雲端號碼僅供參考，叫號以現場為準。每位患者約 3–5 分鐘，請提前到場並在可看到燈號的位置等候以免過號。</p>
-      <p>🔸門診可能視現場狀況提前停止掛號，如有疑問請來電診所：(03)5152971。</p>
+      <p>雲端號碼僅供參考，實際叫號以現場為準。每位患者約 3–5 分鐘，請提前到現場並在可看到燈號的位置等候以免過號。</p>
+      <p>門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)5152971。</p>
     </div>
 
     <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
   </div>
 
   <script>
-    /* 圖片備援：jpg → png → GitHub Raw（避免載不到） */
+    /* 圖片備援：jpg → png → GitHub Raw */
     (function(){
       const logo = document.getElementById('clinicLogo');
-      const fallbacks = [
+      const logoFallbacks = [
         './logo.png',
         'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo1.jpg',
         'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo.png'
       ];
-      let i=0;
+      let li=0;
       logo.onerror = function(){
-        if(i < fallbacks.length){ this.src = fallbacks[i++]; }
+        if(li < logoFallbacks.length){ this.src = logoFallbacks[li++]; }
         else { this.style.display='none'; }
       };
 
       const sch = document.getElementById('scheduleImg');
-      const schFallbacks = [
-        'https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'
-      ];
-      let j=0;
+      const schFallbacks = ['https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'];
+      let si=0;
       sch.onerror = function(){
-        if(j < schFallbacks.length){ this.src = schFallbacks[j++]; }
+        if(si < schFallbacks.length){ this.src = schFallbacks[si++]; }
         else { this.style.display='none'; }
       };
     })();
@@ -209,8 +208,10 @@
       setTimeout(()=>popup.remove(),3000);
     }
 
+    const pad2 = n => String(n).padStart(2,'0');
     const pad3 = n => String(n).padStart(3,'0');
 
+    /* 翻頁動畫 */
     function animateNumber(newNumber){
       const digits=document.querySelectorAll('#numberDisplay .digit-card');
       newNumber.split('').forEach((d,i)=>{
@@ -225,6 +226,7 @@
       });
     }
 
+    /* 叫號來源 */
     async function fetchNumber(){
       try{
         const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
@@ -238,15 +240,20 @@
       }catch(err){ console.error('抓號碼失敗', err); }
     }
 
+    /* 台灣時間 + 星期：YYYY/MM/DD (週) HH:MM:SS */
     function updateTWTime(){
       const el=document.getElementById('twTime');
-      const now=new Date();
-      el.textContent = now.toLocaleString('zh-TW',{
-        timeZone:'Asia/Taipei',
-        year:'numeric', month:'2-digit', day:'2-digit',
-        hour:'2-digit', minute:'2-digit', second:'2-digit',
-        hour12:false
-      });
+      const now = new Date();
+      const zt = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
+      const y = zt.getFullYear();
+      const m = pad2(zt.getMonth()+1);
+      const d = pad2(zt.getDate());
+      const wMap = ['日','一','二','三','四','五','六'];
+      const w = wMap[zt.getDay()];
+      const hh = pad2(zt.getHours());
+      const mm = pad2(zt.getMinutes());
+      const ss = pad2(zt.getSeconds());
+      el.textContent = `${y}/${m}/${d} (${w}) ${hh}:${mm}:${ss}`;
     }
 
     fetchNumber(); setInterval(fetchNumber,5000);
