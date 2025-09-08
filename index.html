@@ -3,28 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>陳萬龍診所叫號系統</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>陳萬龍診所看診進度</title>
+
+<!-- 字體：Noto Sans TC（內文字體）＋ Orbitron（號碼字體） -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@700;800&display=swap" rel="stylesheet">
+
 <style>
+  :root{
+    --primary:#0F4C81;   /* 主色 */
+    --secondary:#A5B8D0; /* 副色 */
+    --accent:#7EC845;    /* 彈出提示色 */
+    --bg:#D8C0AD;        /* 背景色 */
+    --card:#F0EDE5;      /* 卡片背景 */
+  }
+
   body{
     font-family:'Noto Sans TC',sans-serif;
-    background:#eef3f7;
+    background:var(--bg);
     display:flex; justify-content:center;
     padding:40px 0; margin:0;
+    color:#1c1c1c;
   }
 
   .container{
     max-width:800px; width:100%;
-    background:#ffffff;
+    background:var(--card);
     border-radius:24px;
     padding:32px 24px;
     text-align:center;
     box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    border:4px solid var(--primary);
   }
 
   /* 跑馬燈 */
   .marquee{
-    background:#6b7280; color:white;
+    background:var(--primary); color:white;
     border-radius:12px;
     padding:10px 0; margin-bottom:24px;
     overflow:hidden; white-space:nowrap;
@@ -39,24 +52,33 @@
     100%{transform:translateX(-100%);}
   }
 
-  h1{ font-weight:700; margin-bottom:24px; color:#1e3c53; }
+  h1{
+    font-weight:700; margin:0 0 8px;
+    color:var(--primary);
+  }
+  .now-time{
+    font-weight:700;
+    color:var(--secondary);
+    margin-bottom:24px;
+  }
 
-  /* 翻頁鐘卡片 */
+  /* 翻頁鐘卡片（號碼） */
   .number-display{
     display:flex; justify-content:center; gap:12px;
     margin-bottom:16px;
   }
   .digit-card{
     width:90px; height:120px;
-    background:#e1effa; /* 淺藍底 */
-    color:#dc2626; /* 紅字 */
-    font-family:'Share Tech Mono', monospace;
-    font-size:90px; font-weight:bold;
+    background:var(--card);
+    color:var(--primary);
+    font-family:'Orbitron', sans-serif;
+    font-size:90px; font-weight:800;
     border-radius:16px;
     display:flex; align-items:center; justify-content:center;
     position:relative;
     perspective:400px;
     overflow:hidden;
+    box-shadow:inset 0 0 0 2px var(--secondary);
   }
   .digit-card .current, .digit-card .next{
     position:absolute; width:100%; height:100%;
@@ -79,36 +101,28 @@
   }
 
   .note{
-    background:#f1f5f9; padding:16px 20px;
+    background:rgba(165,184,208,0.25);
+    padding:16px 20px;
     border-radius:16px; margin:16px 0;
     box-shadow:0 4px 12px rgba(0,0,0,0.08);
-    font-weight:500; color:#1e3c53;
+    font-weight:600; color:var(--primary);
   }
-
-  .btn{
-    border-radius:50px; padding:14px 32px;
-    font-weight:700; text-decoration:none;
-    display:inline-block; margin:10px;
-    border:none; cursor:pointer;
-    background:#cbd5e1; color:#1e3c53;
-    font-size:18px;
-    min-width:160px;
-    transition:all 0.3s;
-  }
-  .btn:hover{ background:#3b82f6; color:white; }
 
   .schedule{
     margin-top:24px; max-width:100%;
     border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.08);
   }
 
+  /* 彈出提示 */
   .popup{
     position:fixed; top:20px; right:20px;
-    background:#22c55e; color:white;
+    background:var(--accent); color:white;
     padding:16px 28px; border-radius:50px;
     font-size:20px; z-index:9999;
     opacity:0; transform:translateY(-20px);
     animation:fadeInOut 3s forwards;
+    box-shadow:0 6px 18px rgba(0,0,0,.18);
+    font-weight:800;
   }
   @keyframes fadeInOut{
     0%{opacity:0; transform:translateY(-20px);}
@@ -120,8 +134,10 @@
 </head>
 <body>
 <div class="container">
-  <div class="marquee"><span>預約掛號請在門診結束前一小時報到</span></div>
-  <h1>陳萬龍診所門診目前號碼</h1>
+  <div class="marquee"><span>陳萬龍診所門診時間：早診 8:00~11:30（最晚報到時間10:30）；午診 14：00~17：00（最晚報到時間16:00）；晚診 18：00~20：30（最晚報到時間20:00) 請有預約掛號者在最晚報到時間前到場報到，逾時視同放棄，會釋出名額給現場排隊掛號。</span></div>
+
+  <h1>目前門診號碼</h1>
+  <div class="now-time" id="twTime">—</div>
 
   <div class="number-display" id="numberDisplay">
     <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
@@ -129,12 +145,9 @@
     <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
   </div>
 
-  <div class="note">每位患者約三到五分鐘，請提前到場以免過號。</div>
+  <div class="note">雲端號碼僅供參考，實際叫號以現場為準。每位患者預估時間3~5分鐘，請提前到現場聽得到及看得到燈號的位置等候以免過號。門診時間依現場狀況可能提前停止掛號，如有疑慮歡迎來電詢問現場狀況(03)5152971</div>
 
-  <div>
-    <button class="btn" onclick="fetchNumber()">刷新頁面</button>
-    <a href="https://你的預約網址" class="btn">預約掛號</a>
-  </div>
+  <!-- 依需求刪除的兩個按鈕（刷新/預約）已移除 -->
 
   <img src="https://raw.githubusercontent.com/你的帳號/你的repo/main/schedule.png" alt="門診時間表" class="schedule">
 </div>
@@ -142,6 +155,7 @@
 <script>
 let lastNumber='000';
 
+/* 顯示彈出提示 */
 function showPopup(msg){
   const popup=document.createElement('div');
   popup.className='popup';
@@ -150,8 +164,10 @@ function showPopup(msg){
   setTimeout(()=>popup.remove(),3000);
 }
 
+/* 3 碼格式化 */
 function formatNumber(num){ return String(num).padStart(3,'0'); }
 
+/* 翻頁動畫更新數字 */
 function animateNumber(newNumber){
   const digits=document.querySelectorAll('#numberDisplay .digit-card');
   newNumber.split('').forEach((d,i)=>{
@@ -169,6 +185,7 @@ function animateNumber(newNumber){
   });
 }
 
+/* 叫號資料來源 */
 async function fetchNumber(){
   try{
     const res=await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
@@ -176,14 +193,30 @@ async function fetchNumber(){
     let currentNumber=formatNumber(data.number);
     if(currentNumber!==lastNumber){
       animateNumber(currentNumber);
-      showPopup("請 "+currentNumber+" 號進診間");
+      showPopup(`請 ${currentNumber} 號進診間看診`);
       lastNumber=currentNumber;
     }
   }catch(e){console.error("抓號碼失敗",e);}
 }
 
+/* 顯示台灣時間（到秒） */
+function updateTWTime(){
+  const el=document.getElementById('twTime');
+  const now=new Date();
+  el.textContent = now.toLocaleString('zh-TW',{
+    timeZone:'Asia/Taipei',
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit',
+    hour12:false
+  });
+}
+
+/* 啟動輪詢與時鐘 */
 setInterval(fetchNumber,5000);
 fetchNumber();
+
+updateTWTime();
+setInterval(updateTWTime,1000);
 </script>
 </body>
 </html>
