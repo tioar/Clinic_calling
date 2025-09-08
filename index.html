@@ -190,7 +190,7 @@ function formatNumber(num){ return String(num).padStart(3,'0'); }
 async function fetchNumber(){
   try{
     // 你的只讀 GAS 網址
-    const res = await fetch("https://script.google.com/macros/s/AKfycbz7rlqnUN6lueTAon-u3lOH_dF8KmwKen1QAtv7P0dtvxBN9prxHilq7oebzdVkJEzr/exec");
+    const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
     const data = await res.json();
     let currentNumber = formatNumber(data.number);
     if(currentNumber!==lastNumber){
