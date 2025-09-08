@@ -75,7 +75,7 @@ function animateNumber(newNumber){
 
 async function fetchNumber(){
   try{
-    const res=await fetch("https://script.google.com/macros/s/AKfycbxwYmIzrv7zTkq5aHwI_Nnx1C4SvSCJV5skTW_rlQ8wN8f4dOIefOI-TPU4dQM31MJU/exec");
+    const res=await fetch("https://script.google.com/macros/s/AKfycbz7rlqnUN6lueTAon-u3lOH_dF8KmwKen1QAtv7P0dtvxBN9prxHilq7oebzdVkJEzr/exec");
     const data=await res.json();
     let currentNumber=formatNumber(data.number);
     if(currentNumber!==lastNumber){
