@@ -3,9 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<!-- 你的 favicon：這樣就對了 -->
+
+<!-- ✅ 安全補釘：內容安全政策（CSP）。若用伺服器標頭設定更佳 -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  img-src 'self' https://raw.githubusercontent.com data:;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  script-src 'self' 'unsafe-inline';
+  connect-src https://script.google.com https://script.googleusercontent.com;
+  frame-ancestors 'none';
+  upgrade-insecure-requests">
+
+<!-- 你的 favicon -->
 <link rel="icon" type="image/png" href="icon.png" />
-<!-- 建議的補充（可換成你的檔名） -->
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -56,14 +67,13 @@
     background:var(--purple);
     color:#fff;
     border-radius:18px;
-    padding:10px 0;                  /* 稍微矮一點配小字 */
+    padding:10px 0; /* 字小一點就縮一點 padding 看起來更精緻 */
     margin:0 auto 10px;
     overflow:hidden;
     white-space:nowrap;
     user-select:none;
     touch-action:manipulation;
-    font-size:clamp(12px, 2.6vw, 14px); /* ✅ 字體變小 */
-    line-height:1.3;
+    font-size:14px;                   /* 字體縮小 */
   }
   .marquee__track{
     display:inline-flex; align-items:center;
@@ -144,7 +154,7 @@
     box-shadow:0 4px 12px rgba(0,0,0,0.06);
   }
 
-  /* Pop-out：在 Logo 下方，固定單行顯示 */
+  /* Pop-out：容器內絕對定位（Logo 下方），不擋跑馬燈 */
   .popup{
     position:absolute;                 /* 由 JS 設置 top */
     left:50%;
@@ -152,28 +162,20 @@
     background:var(--accent); color:#fff;
     padding:14px 22px; border-radius:999px;
     font-size:20px; z-index:10; font-weight:800;
-
-    /* ✅ 關鍵：單行、不換行、防溢出 */
-    white-space:nowrap;
-    max-width:calc(100% - 24px);
-    overflow:hidden;
-    text-overflow:ellipsis;
-
     opacity:0;                          /* 由動畫淡入/淡出 */
     animation:fadeInOut 3s forwards;
     box-shadow:0 12px 26px rgba(0,0,0,.15);
     pointer-events:none;                /* 不影響點擊 */
+    white-space:nowrap;                 /* 行動裝置盡量不換行 */
+    max-width:90%;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   @keyframes fadeInOut{
     0%{opacity:0; transform:translate(-50%, -6px)}
     10%{opacity:1; transform:translate(-50%, 0)}
     90%{opacity:1; transform:translate(-50%, 0)}
     100%{opacity:0; transform:translate(-50%, -6px)}
-  }
-
-  /* 極小螢幕再縮一點泡泡字 */
-  @media (max-width: 360px){
-    .popup{ font-size:16px; padding:10px 16px; }
   }
 </style>
 </head>
@@ -204,7 +206,8 @@
 
     <div class="note">
       <p>♦︎ 雲端號碼僅供參考，實際叫號以現場為準。每個號碼約 3–5 分鐘，請提前到場在可看到燈號的位置等候以免過號。</p>
-      <p>♦︎ 關於門診：可能視現場狀況提前停止掛號，如有疑問請來電診所 (03)5152971。</p>
+      <p>♦︎ 若已經過號請再次向櫃檯報到，會依現場等候人數調整安排過號者。</p>
+      <p>♦︎ 門診可能視現場狀況提前停止掛號，如有疑問請來電診所(03)5152971。</p>
     </div>
 
     <!-- 飄帶 -->
@@ -251,27 +254,25 @@
 
     let lastNumber='000';
 
-    /* 產生在 Logo 下方的 Popout（單行） */
-    function showPopup(msg){
-      const container=document.querySelector('.container');
-      const logo=document.getElementById('clinicLogo');
+    /* ✅ 安全補釘：對號碼做型別與範圍檢查 */
+    async function fetchNumber(){
+      try{
+        const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
+        const data = await res.json();
 
-      const popup=document.createElement('div');
-      popup.className='popup';
-      popup.textContent=msg;
+        const n = Number(data.number);
+        if (!Number.isFinite(n) || n < 0 || n >= 1000) return;  // 丟掉不合規資料
 
-      container.appendChild(popup);
-
-      // 位置：Logo 底部再往下 8px
-      const top = logo.offsetTop + logo.offsetHeight + 8;
-      popup.style.top = top + 'px';
-
-      // 5 秒後移除
-      setTimeout(()=>popup.remove(),5000);
+        const current = String(n).padStart(3,'0');
+        if(current !== lastNumber){
+          animateNumber(current);
+          showPopup(`請 ${current} 號就診`);
+          lastNumber = current;
+        }
+      }catch(err){ console.error('抓號碼失敗', err); }
     }
 
     const pad2 = n => String(n).padStart(2,'0');
-    const pad3 = n => String(n).padStart(3,'0');
 
     function animateNumber(newNumber){
       const digits=document.querySelectorAll('#numberDisplay .digit-card');
@@ -287,19 +288,6 @@
       });
     }
 
-    async function fetchNumber(){
-      try{
-        const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
-        const data = await res.json();
-        const current = pad3(data.number);
-        if(current!==lastNumber){
-          animateNumber(current);
-          showPopup(`請${current}號進診間看診`); // 無空白，較不易換行
-          lastNumber=current;
-        }
-      }catch(err){ console.error('抓號碼失敗', err); }
-    }
-
     /* 台灣時間 + 星期：YYYY/MM/DD (週) HH:MM:SS */
     function updateTWTime(){
       const el=document.getElementById('twTime');
@@ -313,6 +301,25 @@
 
     fetchNumber(); setInterval(fetchNumber,5000);
     updateTWTime(); setInterval(updateTWTime,1000);
+
+    /* Popout 產生：Logo 下方（單行不夠寬時會省略號而非斷行） */
+    function showPopup(msg){
+      const container=document.querySelector('.container');
+      const logo=document.getElementById('clinicLogo');
+
+      const popup=document.createElement('div');
+      popup.className='popup';
+      popup.textContent=msg;
+
+      container.appendChild(popup);
+
+      // 位置：Logo 底部再往下 8px
+      const top = logo.offsetTop + logo.offsetHeight + 8;
+      popup.style.top = top + 'px';
+
+      // 5秒後移除
+      setTimeout(()=>popup.remove(),5000);
+    }
   </script>
 </body>
 </html>
