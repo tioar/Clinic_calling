@@ -1,153 +1,95 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>診所叫號系統</title>
-  <style>
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      background: #f8f9fa;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-
-    /* 標題 */
-    h1 {
-      color: #333;
-      margin-bottom: 20px;
-    }
-
-    /* 號碼卡片 */
-    .number-card {
-      display: inline-block;
-      background: white;
-      border-radius: 20px;
-      padding: 40px 60px;
-      font-size: 72px;
-      font-weight: bold;
-      color: #e63946;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-      margin: 20px 0;
-    }
-
-    /* 跑馬燈 */
-    .marquee {
-      margin: 20px auto;
-      padding: 10px;
-      background: #4dabf7;
-      color: white;
-      border-radius: 12px;
-      width: 90%;
-      overflow: hidden;
-      white-space: nowrap;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    }
-    .marquee span {
-      display: inline-block;
-      padding-left: 100%;
-      animation: marquee 12s linear infinite;
-    }
-    @keyframes marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-
-    /* 預約按鈕 */
-    .btn {
-      display: inline-block;
-      margin-top: 30px;
-      padding: 15px 30px;
-      border-radius: 25px;
-      background: #2ecc71;
-      color: white;
-      font-size: 20px;
-      text-decoration: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: background 0.3s;
-    }
-    .btn:hover {
-      background: #27ae60;
-    }
-
-    /* 浮動通知 */
-    .popup {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #ff6b6b;
-      color: white;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      font-size: 24px;
-      z-index: 9999;
-      animation: fadeIn 0.5s;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>診所叫號系統</title>
+<style>
+body { font-family:"Microsoft JhengHei",sans-serif; background:#1e3a8a; text-align:center; margin:0; padding:20px; color:white;}
+h1 { margin-bottom:20px; font-size:32px; font-weight:bold;}
+.number-card { display:inline-flex; justify-content:center; background:#3b82f6; border-radius:24px; padding:50px 80px; font-size:96px; font-weight:bold; color:white; box-shadow:0 6px 16px rgba(0,0,0,0.3); margin:20px 0; letter-spacing:10px; overflow:hidden;}
+.digit { display:inline-block; width:1em; text-align:center; transition: transform 0.5s;}
+.marquee { margin:20px auto; padding:10px; background:#2563eb; color:white; border-radius:12px; width:90%; overflow:hidden; white-space:nowrap; box-shadow:0 3px 8px rgba(0,0,0,0.2);}
+.marquee span { display:inline-block; padding-left:100%; animation:marquee 12s linear infinite;}
+@keyframes marquee { 0%{transform:translateX(0);} 100%{transform:translateX(-100%);}}
+.btn { display:inline-block; margin-top:30px; padding:15px 30px; border-radius:25px; background:#22c55e; color:white; font-size:20px; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.2); transition:background 0.3s;}
+.btn:hover{background:#16a34a;}
+.popup { position:fixed; top:20px; right:20px; background:#ef4444; color:white; padding:20px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.3); font-size:24px; z-index:9999; animation:fadeIn 0.5s;}
+@keyframes fadeIn { from{opacity:0; transform:translateY(-20px);} to{opacity:1; transform:translateY(0);}}
+.note-box { margin:30px auto; padding:20px; background:#3b82f6; border-radius:16px; width:90%; font-size:18px; box-shadow:0 4px 12px rgba(0,0,0,0.2); line-height:1.6;}
+.schedule { margin-top:30px; max-width:90%; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+</style>
 </head>
 <body>
 
-  <h1>診所叫號系統</h1>
+<h1>陳萬龍診所叫號系統</h1>
 
-  <!-- 目前號碼 -->
-  <div id="number" class="number-card">000</div>
+<div id="number" class="number-card">
+  <span class="digit">0</span>
+  <span class="digit">0</span>
+  <span class="digit">0</span>
+</div>
 
-  <!-- 跑馬燈 -->
-  <div class="marquee"><span>公告：請保持安靜｜診間內請關閉手機｜謝謝您的配合</span></div>
+<div class="marquee"><span>公告：請保持安靜｜診間內請關閉手機｜謝謝您的配合</span></div>
 
-  <!-- 預約按鈕 -->
-  <a href="https://你的GAS預約網址" target="_blank" class="btn">線上預約</a>
+<a href="https://你的GAS預約網址" target="_blank" class="btn">線上預約</a>
 
-  <script>
-    let lastNumber = "";
+<div class="note-box">
+此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。
+</div>
 
-    // 模擬：從 GAS API 取號碼
-    async function fetchNumber() {
-      try {
-        // 這裡換成你的 GAS API 網址
-        let res = await fetch("https://script.google.com/macros/s/你的GAS-ID/exec");
-        let data = await res.json();
+<img src="images/schedule.png" alt="門診時間表" class="schedule">
 
-        let currentNumber = data.number; // 假設 GAS 回傳 { "number": "215" }
+<script>
+let lastNumber = '000';
 
-        document.getElementById("number").innerText = currentNumber;
+function showPopup(msg){
+  const popup = document.createElement('div');
+  popup.className='popup';
+  popup.innerText=msg;
+  document.body.appendChild(popup);
+  setTimeout(()=>popup.remove(),3000);
+}
 
-        // 如果號碼變動，就播報 + 跳出通知
-        if (currentNumber !== lastNumber) {
-          speakNumber(currentNumber);
-          showPopup("現在請 " + currentNumber + " 號");
-          lastNumber = currentNumber;
-        }
-      } catch (e) {
-        console.error("抓號碼失敗", e);
-      }
+function speakNumber(number){
+  if('speechSynthesis' in window){
+    const msg = new SpeechSynthesisUtterance(""+number+" 號請進診間");
+    window.speechSynthesis.speak(msg);
+  }
+}
+
+function formatNumber(num){ return String(num).padStart(3,'0'); }
+
+function animateNumber(newNumber){
+  const digits=document.querySelectorAll('#number .digit');
+  newNumber.split('').forEach((d,i)=>{
+    if(digits[i].innerText!==d){
+      digits[i].style.transform='translateY(-100%)';
+      setTimeout(()=>{
+        digits[i].innerText=d;
+        digits[i].style.transform='translateY(0)';
+      },250);
     }
+  });
+}
 
-    // 語音播報
-    function speakNumber(num) {
-      const msg = new SpeechSynthesisUtterance("請 " + num + " 號到診間報到");
-      msg.lang = "zh-TW";
-      window.speechSynthesis.speak(msg);
+async function fetchNumber(){
+  try{
+    const res=await fetch("https://script.google.com/macros/s/AKfycbxwYmIzrv7zTkq5aHwI_Nnx1C4SvSCJV5skTW_rlQ8wN8f4dOIefOI-TPU4dQM31MJU/exec");
+    const data=await res.json();
+    let currentNumber=formatNumber(data.number);
+    if(currentNumber!==lastNumber){
+      animateNumber(currentNumber);
+      speakNumber(currentNumber);
+      showPopup("現在請 "+currentNumber+" 號");
+      lastNumber=currentNumber;
     }
+  }catch(e){console.error("抓號碼失敗",e);}
+}
 
-    // 浮動通知
-    function showPopup(text) {
-      const popup = document.createElement("div");
-      popup.className = "popup";
-      popup.innerText = text;
-      document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), 5000);
-    }
+setInterval(fetchNumber,5000);
+fetchNumber();
+</script>
 
-    // 每 5 秒抓一次號碼
-    setInterval(fetchNumber, 5000);
-    fetchNumber();
-  </script>
 </body>
 </html>
