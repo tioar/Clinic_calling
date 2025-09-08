@@ -10,18 +10,19 @@
 
 <style>
   :root{
-    /* 專業藍紫系 */
-    --primary:#35579A;   /* 深藍 */
-    --teal:#3A8EA7;      /* 青藍 */
-    --purple:#6B5AAE;    /* 紫 */
-    --soft:#A5B8D0;      /* 淺藍 */
-    --beige:#D8C0AD;     /* 米膚 */
+    /* 依新色帶：玫瑰紅、粉紫、暖灰、石墨灰、深藍 */
+    --navy:#2F4E86;       /* 深藍 */
+    --rose:#A6536B;       /* 玫瑰紅 */
+    --blush:#D9A6BF;      /* 粉紫 */
+    --taupe:#CFC6C2;      /* 暖灰 */
+    --graphite:#6F6F6F;   /* 石墨灰 */
 
-    --accent:#2E7D32;    /* 更深提示綠（Pop-out） */
-    --bg:#F5EFE8;        /* 背景(淡米膚) */
-    --card:#FFFFFF;      /* 卡片白 */
-    --note:#F2F6FB;      /* 說明框淡藍 */
-    --digit-red:#DC2626; /* 號碼紅 */
+    --accent:#2E7D32;     /* Pop-out 深綠 */
+    --bg:#F5F1EF;         /* 畫面背景（很淡的暖灰） */
+    --card:#FFFFFF;       /* 卡片白 */
+    --note:#F6EEF2;       /* 說明框底（極淺粉紫） */
+    --digit-red:#DC2626;  /* 號碼紅（保留） */
+    --soft-edge:#DED7D3;  /* 卡片內描邊（更淡暖灰） */
   }
 
   *{ box-sizing:border-box; }
@@ -39,13 +40,13 @@
     border-radius:36px;
     padding:clamp(16px,4vw,32px);
     text-align:center;
-    box-shadow:0 10px 30px rgba(53,87,154,0.10);
-    border:3px solid var(--primary);
+    box-shadow:0 10px 30px rgba(47,78,134,0.10); /* 以深藍投影 */
+    border:3px solid var(--navy);
   }
 
-  /* 跑馬燈（放慢，可 hover 暫停） */
+  /* 跑馬燈：玫瑰紅（放慢，可 hover 暫停） */
   .marquee{
-    background:var(--purple); color:#fff;
+    background:var(--rose); color:#fff;
     border-radius:18px;
     padding:12px 0; margin:0 auto 10px;
     overflow:hidden; white-space:nowrap;
@@ -54,7 +55,7 @@
   .marquee:hover span{ animation-play-state:paused; }
   @keyframes marquee{ 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
 
-  /* LOGO：加大、無陰影/圓角，貼合白底 */
+  /* Logo：加大、無陰影/圓角，貼合白底 */
   .logo-wrap{ margin:10px 0 0; }
   .logo{
     height:clamp(120px, 22vw, 200px);
@@ -62,8 +63,9 @@
     filter:none; border:none; border-radius:0; background:#fff;
   }
 
-  h1{ margin:12px 0; color:var(--primary); letter-spacing:1px; }
-  .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
+  /* 標題與時間 */
+  h1{ margin:12px 0; color:var(--navy); letter-spacing:1px; }
+  .now-time{ color:#5d6b85; font-weight:700; margin-bottom:18px; }
 
   /* 號碼卡：白底紅字（Manrope，等寬數字） */
   .number-display{
@@ -81,7 +83,7 @@
     border-radius:28px;
     display:flex; align-items:center; justify-content:center;
     position:relative; perspective:400px; overflow:hidden;
-    box-shadow:0 10px 24px rgba(53,87,154,.08), inset 0 0 0 3px var(--soft);
+    box-shadow:0 10px 24px rgba(47,78,134,.08), inset 0 0 0 3px var(--soft-edge);
   }
   .digit-card .current, .digit-card .next{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center; backface-visibility:hidden;
@@ -92,27 +94,28 @@
   @keyframes flipTop{0%{transform:rotateX(0)}100%{transform:rotateX(180deg)}}
   @keyframes flipBottom{0%{transform:rotateX(-180deg)}100%{transform:rotateX(0)}}
 
-  /* 說明區：分行置中 */
+  /* 說明區：分行置中（極淺粉紫底） */
   .note{
     background:var(--note);
     padding:16px 20px;
     border-radius:22px;
     margin:16px auto 12px;
     box-shadow:0 4px 12px rgba(0,0,0,0.06);
-    color:#274a6b; font-weight:600;
+    color:#2b405f; font-weight:600;
     width:min(760px,100%); text-align:center;
   }
   .note p{ margin:.35em 0; }
 
-  /* 調色帶（移到注意事項下面） */
+  /* 飄帶：使用你的色帶順序 */
   .palette{
     height:8px; border-radius:6px; margin:8px auto 16px; width:min(560px,90%);
     background:
       linear-gradient(to right,
-        var(--beige) 0 22%,
-        var(--accent) 22% 45%,
-        var(--primary) 45% 82%,
-        var(--soft) 82% 100%);
+        var(--rose) 0 24%,
+        var(--blush) 24% 48%,
+        var(--taupe) 48% 72%,
+        var(--graphite) 72% 84%,
+        var(--navy) 84% 100%);
   }
 
   .schedule{
@@ -121,7 +124,7 @@
     box-shadow:0 4px 12px rgba(0,0,0,0.06);
   }
 
-  /* Pop-out：更深綠 */
+  /* Pop-out：深綠 */
   .popup{
     position:fixed; top:20px; right:20px;
     background:var(--accent); color:#fff;
@@ -146,7 +149,7 @@
       <span>陳萬龍診所門診時間：早診 08:00–11:30（最晚報到10:30）；午診 14:00–17:00（最晚報到16:00）；晚診 18:00–20:30（最晚報到20:00）。請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
     </div>
 
-    <!-- Logo 加大 -->
+    <!-- Logo -->
     <div class="logo-wrap">
       <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
     </div>
@@ -165,14 +168,14 @@
       <p>♦︎ 門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)5152971。</p>
     </div>
 
-    <!-- 飄帶移到注意事項下面 -->
+    <!-- 飄帶（注意事項下方） -->
     <div class="palette" aria-hidden="true"></div>
 
     <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
   </div>
 
   <script>
-    /* 圖片備援：jpg → png → GitHub Raw */
+    // 圖片備援：jpg → png → GitHub Raw
     (function(){
       const logo = document.getElementById('clinicLogo');
       const logoFallbacks = [
@@ -180,15 +183,14 @@
         'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo1.jpg',
         'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo.png'
       ];
-      let li=0;
+      let i=0;
       logo.onerror = function(){
-        if(li < logoFallbacks.length){ this.src = logoFallbacks[li++]; }
+        if(i < logoFallbacks.length){ this.src = logoFallbacks[i++]; }
         else { this.style.display='none'; }
       };
     })();
 
     let lastNumber='000';
-
     function showPopup(msg){
       const popup=document.createElement('div');
       popup.className='popup';
@@ -231,15 +233,15 @@
     function updateTWTime(){
       const el=document.getElementById('twTime');
       const now = new Date();
-      const zt = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
-      const y = zt.getFullYear();
-      const m = pad2(zt.getMonth()+1);
-      const d = pad2(zt.getDate());
+      const tw = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
+      const y = tw.getFullYear();
+      const m = pad2(tw.getMonth()+1);
+      const d = pad2(tw.getDate());
       const wMap = ['日','一','二','三','四','五','六'];
-      const w = wMap[zt.getDay()];
-      const hh = pad2(zt.getHours());
-      const mm = pad2(zt.getMinutes());
-      const ss = pad2(zt.getSeconds());
+      const w = wMap[tw.getDay()];
+      const hh = pad2(tw.getHours());
+      const mm = pad2(tw.getMinutes());
+      const ss = pad2(tw.getSeconds());
       el.textContent = `${y}/${m}/${d} (${w}) ${hh}:${mm}:${ss}`;
     }
 
