@@ -3,128 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>陳萬龍診所叫號系統</title>
+<title>診所叫號系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family:"Microsoft JhengHei",sans-serif;
-  background:#1e3a8a;
+:root {
+  --main:#3e6d8e;
+  --hover:#335a75;
+  --danger:#dc3545;
+  --card-bg:#ffffff;
+  --page-bg:#f4f6f8;
+  --line:#e7e9ee;
+}
+body{
+  font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;
+  background:var(--page-bg);
+  margin:0; padding:20px;
+}
+.card{
+  max-width:600px; margin:0 auto;
+  background:var(--card-bg);
+  border-radius:24px;
+  padding:32px;
+  box-shadow:0 12px 28px rgba(0,0,0,0.08);
   text-align:center;
-  margin:0;
-  padding:20px;
-  color:white;
 }
+h1{ font-weight:700; color:var(--main); margin-bottom:24px; }
 
-/* 中間卡片 */
-.card {
-  background:#93c5fd; /* 淺藍 */
-  border-radius:20px;
-  padding:30px;
-  max-width:600px;
-  margin:0 auto;
-  box-shadow:0 6px 20px rgba(0,0,0,0.3);
+.number-card{
+  display:flex; justify-content:center; gap:12px; margin-bottom:20px;
 }
-
-/* 標題 */
-h1 {
-  font-size:28px;
-  margin-bottom:20px;
-}
-
-/* 翻頁號碼卡片 */
-.number-card {
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  margin:20px 0;
-}
-.digit {
-  position: relative;
-  width:80px;
-  height:100px;
-  background:white;
-  color:#e63946;
-  font-size:72px;
-  font-weight:bold;
+.digit{
+  width:80px; height:100px;
+  background:#fff;
+  color:var(--danger);
+  font-size:64px;
+  font-weight:700;
   border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
 }
-.digit.flip .top, .digit.flip .bottom {
+.digit.flip .top, .digit.flip .bottom{
   transition: transform 0.5s ease-in-out;
 }
-.digit .top, .digit .bottom {
-  position:absolute;
-  left:0; right:0;
-  height:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.digit .top, .digit .bottom{
+  position:absolute; left:0; right:0;
+  height:50%; display:flex; align-items:center; justify-content:center;
   backface-visibility:hidden;
 }
-.digit .top { top:0; border-bottom:1px solid #ccc; }
-.digit .bottom { bottom:0; transform:rotateX(180deg); }
+.digit .top{ top:0; border-bottom:1px solid #ccc; }
+.digit .bottom{ bottom:0; transform:rotateX(180deg); }
 
-/* 跑馬燈 */
-.marquee {
-  margin:20px auto;
-  padding:10px;
-  background:#2563eb;
-  color:white;
+.marquee{
+  margin:20px auto; padding:10px;
+  background:#e7f0fa;
+  color:#2e3b4e;
   border-radius:12px;
-  width:90%;
-  overflow:hidden;
-  white-space:nowrap;
+  width:90%; overflow:hidden; white-space:nowrap;
 }
-.marquee span {
+.marquee span{
   display:inline-block;
   padding-left:100%;
   animation:marquee 12s linear infinite;
 }
-@keyframes marquee {0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
+@keyframes marquee{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
 
-/* 按鈕 */
-.btn {
+/* 按鈕膠囊風格 */
+.btn{
   display:inline-block;
-  margin:10px 10px 0 10px;
+  margin:10px 8px;
   padding:12px 28px;
-  border-radius:25px;
-  background:#22c55e;
-  color:white;
-  font-size:18px;
-  text-decoration:none;
-  cursor:pointer;
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
-  transition:background 0.3s;
-}
-.btn:hover{background:#16a34a;}
-
-/* 注意事項 */
-.note-box {
-  margin:20px auto;
-  padding:15px;
-  background:#3b82f6;
-  border-radius:16px;
-  width:90%;
+  border-radius:50rem;
+  background:var(--main);
+  color:#fff;
+  font-weight:700;
   font-size:16px;
-  line-height:1.6;
+  border:none; cursor:pointer;
 }
-
-/* 門診表 */
-.schedule {
+.btn:hover{ background:var(--hover); }
+.note-box{
+  margin:20px auto;
+  padding:16px;
+  background:#e7f0fa;
+  color:#2e3b4e;
+  border-radius:16px;
+  font-size:16px;
+  line-height:1.5;
+}
+.schedule{
   margin-top:20px;
   max-width:90%;
   border-radius:16px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 </style>
 </head>
 <body>
-
-<h1>陳萬龍診所叫號系統</h1>
-
 <div class="card">
+  <h1>陳萬龍診所叫號系統</h1>
+
   <div id="number" class="number-card">
     <div class="digit">0</div>
     <div class="digit">0</div>
@@ -132,12 +108,12 @@ h1 {
   </div>
 
   <div class="marquee">
-    <span>公告：此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。｜謝謝您的配合</span>
+    <span>公告：此號碼僅供參考，實際叫號以現場為主，每位患者預估三到五分鐘，請提前到場等候以免過號。</span>
   </div>
 
   <div>
     <button class="btn" id="voiceBtn">開啟語音提醒</button>
-    <a href="https://tioar.github.io/clinic-reservation/index.html" target="_blank" class="btn">線上預約</a>
+    <a href="https://tioar.github.io/clinic-reservation/index.html" class="btn">線上預約</a>
   </div>
 
   <div class="note-box">
@@ -148,72 +124,52 @@ h1 {
 </div>
 
 <script>
-let lastNumber = '000';
-let canSpeak = false;
+let lastNumber='000';
+let canSpeak=false;
 
-// 點擊「開啟語音提醒」按鈕啟用語音
-document.getElementById('voiceBtn').addEventListener('click', ()=>{
-  canSpeak = true;
-  alert("語音提醒已啟用，未來號碼更新會自動播報！");
+document.getElementById('voiceBtn').addEventListener('click',()=>{
+  canSpeak=true;
+  alert('語音提醒已啟用！');
 });
 
 // 翻頁動畫
-function animateDigit(digitElem, newNum){
-  if(digitElem.innerText === newNum) return;
-  const top = document.createElement('div');
-  top.className='top';
-  top.innerText=digitElem.innerText;
-  const bottom = document.createElement('div');
-  bottom.className='bottom';
-  bottom.innerText=newNum;
-  digitElem.innerText='';
-  digitElem.appendChild(top);
-  digitElem.appendChild(bottom);
-  setTimeout(()=>{
-    top.style.transform='rotateX(-180deg)';
-    bottom.style.transform='rotateX(0deg)';
-  },50);
-  setTimeout(()=>{
-    digitElem.innerText=newNum;
-  },550);
+function animateDigit(digitElem,newNum){
+  if(digitElem.innerText===newNum) return;
+  const top=document.createElement('div'); top.className='top'; top.innerText=digitElem.innerText;
+  const bottom=document.createElement('div'); bottom.className='bottom'; bottom.innerText=newNum;
+  digitElem.innerText=''; digitElem.appendChild(top); digitElem.appendChild(bottom);
+  setTimeout(()=>{ top.style.transform='rotateX(-180deg)'; bottom.style.transform='rotateX(0deg)'; },50);
+  setTimeout(()=>{ digitElem.innerText=newNum; },550);
 }
 
-// 更新整個號碼
 function updateNumber(newNumber){
-  const digits = document.querySelectorAll('#number .digit');
-  newNumber.split('').forEach((n,i)=>{
-    animateDigit(digits[i], n);
-  });
+  const digits=document.querySelectorAll('#number .digit');
+  newNumber.split('').forEach((n,i)=>{ animateDigit(digits[i],n); });
 }
 
-// 格式化數字
 function formatNumber(num){ return String(num).padStart(3,'0'); }
-
-// 播報號碼
 function speakNumber(number){
   if(canSpeak && 'speechSynthesis' in window){
-    const msg = new SpeechSynthesisUtterance(number + '號請進診間');
+    const msg=new SpeechSynthesisUtterance(number+'號請進診間');
     window.speechSynthesis.speak(msg);
   }
 }
 
-// 抓號碼
 async function fetchNumber(){
   try{
-    const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
-    const data = await res.json();
-    const currentNumber = formatNumber(data.number);
+    const res=await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
+    const data=await res.json();
+    const currentNumber=formatNumber(data.number);
     if(currentNumber!==lastNumber){
       updateNumber(currentNumber);
       speakNumber(currentNumber);
-      lastNumber = currentNumber;
+      lastNumber=currentNumber;
     }
-  }catch(e){console.error('抓號碼失敗', e);}
+  }catch(e){console.error('抓號碼失敗',e);}
 }
 
 setInterval(fetchNumber,5000);
 fetchNumber();
 </script>
-
 </body>
 </html>
