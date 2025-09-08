@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- 你的 favicon：這樣就對了 -->
 <link rel="icon" type="image/png" href="icon.png" />
+<!-- 建議的補充（可換成你的檔名） -->
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
 <title>陳萬龍診所看診進度</title>
 
 <!-- 內文：Noto Sans TC；號碼：Manrope -->
@@ -11,15 +17,11 @@
 
 <style>
   :root{
-    /* 主題色（先前版本一致） */
     --primary:#35579A;   /* 深藍 */
-    --purple:#6B5AAE;    /* 紫（跑馬燈背景可改這個） */
+    --purple:#6B5AAE;    /* 跑馬燈背景 */
     --soft:#A5B8D0;      /* 淺藍 */
     --beige:#D8C0AD;     /* 米膚 */
-
-    /* Pop-out 綠色（色塊） */
-    --accent:#6db337;
-
+    --accent:#6db337;    /* Pop-out 綠 */
     --bg:#F5EFE8;        /* 背景 */
     --card:#FFFFFF;      /* 卡片白 */
     --note:#F2F6FB;      /* 說明框淡藍 */
@@ -36,6 +38,7 @@
     display:flex; justify-content:center; color:#1c1c1c;
   }
   .container{
+    position:relative;               /* 讓 popout 可相對定位於容器內 */
     width:min(860px,96vw);
     background:var(--card);
     border-radius:36px;
@@ -43,12 +46,13 @@
     text-align:center;
     box-shadow:0 10px 30px rgba(53,87,154,0.10);
     border:3px solid var(--primary);
+    overflow:visible;
   }
 
   /* 🟣 無縫循環跑馬燈（滑過/長按暫停） */
   .marquee{
-    --gap: 2rem;     /* 兩段內容間距 */
-    --speed: 45s;    /* 速度：越小越快 */
+    --gap: 2rem;
+    --speed: 45s;
     background:var(--purple);
     color:#fff;
     border-radius:18px;
@@ -60,22 +64,18 @@
     touch-action:manipulation;
   }
   .marquee__track{
-    display:inline-flex;
-    align-items:center;
+    display:inline-flex; align-items:center;
     width:max-content;
     animation:marquee-loop var(--speed) linear infinite;
   }
-  .marquee__track > span{
-    padding-right:var(--gap);
-    flex-shrink:0;
-  }
+  .marquee__track > span{ padding-right:var(--gap); flex-shrink:0; }
   .marquee:hover .marquee__track{ animation-play-state:paused; }
   @keyframes marquee-loop{
     from{ transform:translateX(0); }
-    to  { transform:translateX(-50%); } /* 走一半＝第二段無縫接上 */
+    to  { transform:translateX(-50%); }
   }
 
-  /* Logo：加大、無陰影圓角，貼合白底 */
+  /* Logo：加大、貼合白底 */
   .logo-wrap{ margin:10px 0 0; }
   .logo{
     height:clamp(120px, 22vw, 200px);
@@ -86,7 +86,7 @@
   h1{ margin:12px 0; color:var(--primary); letter-spacing:1px; }
   .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
 
-  /* 號碼卡：白底紅字（Manrope，等寬數字） */
+  /* 號碼卡：白底紅字（Manrope） */
   .number-display{
     display:flex; justify-content:center; gap:clamp(8px,2vw,16px);
     margin-bottom:16px; flex-wrap:nowrap;
@@ -142,21 +142,24 @@
     box-shadow:0 4px 12px rgba(0,0,0,0.06);
   }
 
-  /* Pop-out：珊瑚橘 */
+  /* Pop-out：改為「容器內絕對定位」→ 會出現在 Logo 下方，不擋跑馬燈 */
   .popup{
-    position:fixed; top:20px; right:20px;
+    position:absolute;                 /* 由 JS 設置 top */
+    left:50%;
+    transform:translateX(-50%);
     background:var(--accent); color:#fff;
     padding:14px 22px; border-radius:999px;
-    font-size:20px; z-index:9999; font-weight:800;
-    opacity:0; transform:translateY(-18px);
+    font-size:20px; z-index:10; font-weight:800;
+    opacity:0;                          /* 由動畫淡入/淡出 */
     animation:fadeInOut 3s forwards;
-    box-shadow:0 12px 26px rgba(243,115,99,.25);
+    box-shadow:0 12px 26px rgba(0,0,0,.15);
+    pointer-events:none;                /* 不影響點擊 */
   }
   @keyframes fadeInOut{
-    0%{opacity:0; transform:translateY(-18px)}
-    10%{opacity:1; transform:translateY(0)}
-    90%{opacity:1; transform:translateY(0)}
-    100%{opacity:0; transform:translateY(-18px)}
+    0%{opacity:0; transform:translate(-50%, -6px)}
+    10%{opacity:1; transform:translate(-50%, 0)}
+    90%{opacity:1; transform:translate(-50%, 0)}
+    100%{opacity:0; transform:translate(-50%, -6px)}
   }
 </style>
 </head>
@@ -234,11 +237,22 @@
 
     let lastNumber='000';
 
+    /* 產生在 Logo 下方的 Popout */
     function showPopup(msg){
+      const container=document.querySelector('.container');
+      const logo=document.getElementById('clinicLogo');
+
       const popup=document.createElement('div');
       popup.className='popup';
-      popup.innerText=msg;
-      document.body.appendChild(popup);
+      popup.textContent=msg;
+
+      container.appendChild(popup);
+
+      // 位置：Logo 底部再往下 8px
+      const top = logo.offsetTop + logo.offsetHeight + 8;
+      popup.style.top = top + 'px';
+
+      // 3 秒後移除
       setTimeout(()=>popup.remove(),3000);
     }
 
