@@ -280,7 +280,7 @@
         const current = pad3(data.number);
         if(current!==lastNumber){
           animateNumber(current);
-          showPopup(`請 ${current} 號進診間看診`);
+          showPopup(`請 ${current} 號就診`);
           lastNumber=current;
         }
       }catch(err){ console.error('抓號碼失敗', err); }
