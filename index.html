@@ -4,12 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<!-- 站點基礎 -->
 <title>陳萬龍診所看診進度</title>
 <meta name="description" content="即時看診進度與門診資訊">
 <meta name="theme-color" content="#35579A">
 
-<!-- Open Graph / LINE / FB 預覽 -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="陳萬龍診所｜看診進度">
 <meta property="og:description" content="即時看診進度與門診資訊。">
@@ -19,7 +17,7 @@
 <meta property="og:url" content="https://tioar.github.io/Clinic_calling/">
 <meta property="og:locale" content="zh_TW">
 
-<!-- ✅ CSP 安全補釘（若能用伺服器 HTTP 標頭更好） -->
+<!-- CSP 安全補釘 -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
   img-src 'self' https://raw.githubusercontent.com data:;
@@ -30,29 +28,32 @@
   frame-ancestors 'none';
   upgrade-insecure-requests">
 
-<!-- Favicon / Touch Icons（都放在網站根目錄） -->
+<!-- Icons -->
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
 <link rel="shortcut icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 字體（內文：Noto Sans TC；號碼：Manrope） -->
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    --primary:#35579A;   /* 深藍 */
-    --purple:#6B5AAE;    /* 跑馬燈背景 */
-    --soft:#A5B8D0;      /* 淺藍 */
-    --beige:#D8C0AD;     /* 米膚 */
-    --accent:#6db337;    /* Popout 綠 */
-    --bg:#F5EFE8;        /* 背景 */
-    --card:#FFFFFF;      /* 卡片白 */
-    --note:#F2F6FB;      /* 說明框淡藍 */
-    --digit-red:#DC2626; /* 號碼紅 */
+    --primary:#35579A;
+    --purple:#6B5AAE;
+    --soft:#A5B8D0;
+    --beige:#D8C0AD;
+    --accent:#6db337;    /* popup 綠 */
+    --bg:#F5EFE8;
+    --card:#FFFFFF;
+    --note:#F2F6FB;
+    --digit-red:#DC2626;
+
+    --pill-red:#E53935;  /* 休診 紅膠囊 */
+    --pill-coral:#F37163;/* 停止掛號 珊瑚膠囊 */
   }
 
   *{ box-sizing:border-box; }
@@ -65,7 +66,7 @@
     display:flex; justify-content:center; color:#1c1c1c;
   }
   .container{
-    position:relative;               /* 讓 popout 相對定位於容器內 */
+    position:relative;
     width:min(860px,96vw);
     background:var(--card);
     border-radius:36px;
@@ -76,10 +77,10 @@
     overflow:visible;
   }
 
-  /* 🟣 無縫循環跑馬燈（滑過/長按暫停；字體較小） */
+  /* 無縫循環跑馬燈 */
   .marquee{
-    --gap: 2rem;      /* 兩段內容間距 */
-    --speed: 45s;     /* 速度：越小越快 */
+    --gap: 2rem;
+    --speed: 45s;
     background:var(--purple);
     color:#fff;
     border-radius:18px;
@@ -100,10 +101,10 @@
   .marquee:hover .marquee__track{ animation-play-state:paused; }
   @keyframes marquee-loop{
     from{ transform:translateX(0); }
-    to  { transform:translateX(-50%); } /* 走一半＝第二段無縫接上 */
+    to  { transform:translateX(-50%); }
   }
 
-  /* Logo：加大、貼合白底 */
+  /* Logo */
   .logo-wrap{ margin:10px 0 0; }
   .logo{
     height:clamp(120px, 22vw, 200px);
@@ -111,10 +112,22 @@
     filter:none; border:none; border-radius:0; background:#fff;
   }
 
+  /* ⬇️ 膠囊提示區（置中，僅在需要時顯示） */
+  .pill-wrap{ display:flex; justify-content:center; margin:10px 0 6px; min-height:0; }
+  .pill{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:10px 18px; border-radius:999px; color:#fff; font-weight:900;
+    box-shadow:0 8px 18px rgba(0,0,0,.12); letter-spacing:.5px;
+    max-width:90%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:16px;
+  }
+  .pill.red{ background:var(--pill-red); }
+  .pill.coral{ background:var(--pill-coral); }
+
   h1{ margin:12px 0; color:var(--primary); letter-spacing:1px; }
   .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
 
-  /* 號碼卡：白底紅字（Manrope 等寬數字） */
+  /* 號碼卡 */
   .number-display{
     display:flex; justify-content:center; gap:clamp(8px,2vw,16px);
     margin-bottom:16px; flex-wrap:nowrap;
@@ -153,7 +166,7 @@
   }
   .note p{ margin:.35em 0; }
 
-  /* 飄帶（注意事項下方） */
+  /* 調色帶 */
   .palette{
     height:8px; border-radius:6px; margin:8px auto 16px; width:min(560px,90%);
     background:
@@ -170,19 +183,16 @@
     box-shadow:0 4px 12px rgba(0,0,0,0.06);
   }
 
-  /* Popout：Logo 下方單行顯示（不足寬度時省略號，不擋跑馬燈） */
+  /* Popup（維持原本：號碼變動時短暫顯示） */
   .popup{
-    position:absolute;                 /* JS 會設定 top 位置 */
-    left:50%;
+    position:absolute; left:50%;
     transform:translateX(-50%);
     background:var(--accent); color:#fff;
     padding:14px 22px; border-radius:999px;
     font-size:20px; z-index:10; font-weight:800;
-    opacity:0;                          /* 由動畫淡入/淡出 */
-    animation:fadeInOut 3s forwards;
+    opacity:0; animation:fadeInOut 3s forwards;
     box-shadow:0 12px 26px rgba(0,0,0,.15);
-    pointer-events:none;
-    white-space:nowrap;
+    pointer-events:none; white-space:nowrap;
     max-width:90%; overflow:hidden; text-overflow:ellipsis;
   }
   @keyframes fadeInOut{
@@ -196,11 +206,11 @@
 
 <body>
   <div class="container">
-    <!-- 無縫循環跑馬燈（滑過或長按可暫停） -->
+    <!-- 跑馬燈 -->
     <div class="marquee" aria-label="診所訊息跑馬燈">
       <div class="marquee__track" id="marqueeTrack">
-        <span>✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（有線上預約者最晚報到10:30）；☁︎ 午診 14:00–17:00（有線上預約者最晚報到16:00）；☾ 晚診 18:00–20:30（有線上預約者最晚報到20:00）。有線上預約者，請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
-        <span aria-hidden="true">✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（有線上預約者最晚報到10:30）；☁︎ 午診 14:00–17:00（有線上預約者最晚報到16:00）；☾ 晚診 18:00–20:30（有線上預約者最晚報到20:00）。有線上預約者請於最晚報到時間前到場，逾時視同放棄，名額將釋出給現場掛號。</span>
+        <span>✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（最晚報到10:30）；☁︎ 午診 14:00–17:00（最晚報到16:00）；☾ 晚診 18:00–20:30（最晚報到20:00）。逾時視同放棄，名額將釋出給現場掛號。</span>
+        <span aria-hidden="true">✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（最晚報到10:30）；☁︎ 午診 14:00–17:00（最晚報到16:00）；☾ 晚診 18:00–20:30（最晚報到20:00）。逾時視同放棄，名額將釋出給現場掛號。</span>
       </div>
     </div>
 
@@ -208,6 +218,9 @@
     <div class="logo-wrap">
       <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
     </div>
+
+    <!-- ⬇️ 這裡是「休診／停止掛號」膠囊提示容器 -->
+    <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
     <h1>目前看診號碼</h1>
     <div class="now-time" id="twTime">—</div>
@@ -219,19 +232,17 @@
     </div>
 
     <div class="note">
-      <p>♦︎ 雲端號碼僅供參考，實際叫號以現場為準。每個號碼約 3–5 分鐘，請提前到場在可看到燈號的位置等候以免過號。</p>
-      <p>♦︎ 若已經過號請再次向櫃檯報到，會依現場等候人數調整安排過號者。</p>
-      <p>♦︎ 門診可能視現場狀況提前停止掛號，如有疑問請來電診所(03)5152971。</p>
+      <p>♦︎ 雲端號碼僅供參考，實際叫號以現場為準。每位患者約 3–5 分鐘，請提前到場在可看到燈號的位置等候以免過號。</p>
+      <p>♦︎ 若已過號請再次向櫃檯報到，將依現場狀況調整安排。</p>
+      <p>♦︎ 門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)5152971。</p>
     </div>
 
-    <!-- 調色帶 -->
     <div class="palette" aria-hidden="true"></div>
-
     <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
   </div>
 
   <script>
-    /* 跑馬燈：行動裝置「長按暫停」 */
+    /* 跑馬燈可長按/滑過暫停 */
     (function(){
       const marquee = document.querySelector('.marquee');
       const track = document.getElementById('marqueeTrack');
@@ -243,7 +254,7 @@
       marquee.addEventListener('pointercancel', run);
     })();
 
-    /* 圖片備援：jpg → png → GitHub Raw */
+    /* 圖片備援 */
     (function(){
       const logo = document.getElementById('clinicLogo');
       const logoFallbacks = [
@@ -268,15 +279,18 @@
 
     let lastNumber='000';
 
-    /* ✅ 安全補釘：對號碼做型別與範圍檢查 */
+    /* 叫號＋旗標拉回與呈現 */
     async function fetchNumber(){
       try{
-        const res = await fetch("https://script.google.com/macros/s/AKfycbxmehGXGH_bPOD9tlOTibLzRuH35Jy3hiShjPlag2rSzpm-9c9VKTduRbc4Bjf6nifd/exec");
+        const res = await fetch("https://script.google.com/macros/s/AKfycbxCxob5Ec0N7DqaT8ezOoNHgXjO9vOJ7ooEDUYiTnbKxXX4i9fFxuf-Dqs4PYMpmQJU/exec");
         const data = await res.json();
 
-        const n = Number(data.number);
-        if (!Number.isFinite(n) || n < 0 || n >= 1000) return;  // 丟掉不合規資料
+        // --- 顯示膠囊狀態（優先顯示休診，其次停止掛號） ---
+        renderStatusPill(data);
 
+        // --- 安全防呆 & 顯示叫號 ---
+        const n = Number(data.number);
+        if (!Number.isFinite(n) || n < 0 || n >= 1000) return;
         const current = String(n).padStart(3,'0');
         if(current !== lastNumber){
           animateNumber(current);
@@ -284,6 +298,22 @@
           lastNumber = current;
         }
       }catch(err){ console.error('抓號碼失敗', err); }
+    }
+
+    function renderStatusPill(data){
+      const box = document.getElementById('statusPill');
+      box.innerHTML = ''; // 清空
+      if (data.holiday === true){
+        const el = document.createElement('div');
+        el.className = 'pill red';
+        el.textContent = '現在時間沒有門診，休診中';
+        box.appendChild(el);
+      } else if (data.closed === true){
+        const el = document.createElement('div');
+        el.className = 'pill coral';
+        el.textContent = '當前時段門診已經停止掛號';
+        box.appendChild(el);
+      }
     }
 
     const pad2 = n => String(n).padStart(2,'0');
@@ -302,7 +332,6 @@
       });
     }
 
-    /* 台灣時間 + 星期：YYYY/MM/DD (週) HH:MM:SS */
     function updateTWTime(){
       const el=document.getElementById('twTime');
       const now = new Date();
@@ -316,22 +345,16 @@
     fetchNumber(); setInterval(fetchNumber,5000);
     updateTWTime(); setInterval(updateTWTime,1000);
 
-    /* Popout 產生：Logo 下方（單行；過長省略號） */
+    /* 號碼變更 Popup（Logo 下方） */
     function showPopup(msg){
       const container=document.querySelector('.container');
       const logo=document.getElementById('clinicLogo');
-
       const popup=document.createElement('div');
       popup.className='popup';
       popup.textContent=msg;
-
       container.appendChild(popup);
-
-      // 位置在 Logo 底部再往下 8px
       const top = logo.offsetTop + logo.offsetHeight + 8;
       popup.style.top = top + 'px';
-
-      // 5 秒後移除
       setTimeout(()=>popup.remove(),5000);
     }
   </script>
