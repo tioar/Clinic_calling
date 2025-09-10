@@ -279,43 +279,74 @@
 
     let lastNumber='000';
 
-    /* 叫號＋旗標拉回與呈現 */
-    async function fetchNumber(){
-      try{
-        const res = await fetch("https://script.google.com/macros/s/AKfycbxCxob5Ec0N7DqaT8ezOoNHgXjO9vOJ7ooEDUYiTnbKxXX4i9fFxuf-Dqs4PYMpmQJU/exec");
-        const data = await res.json();
+    /* ================== 低延遲抓號：參數 ================== */
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCxob5Ec0N7DqaT8ezOoNHgXjO9vOJ7ooEDUYiTnbKxXX4i9fFxuf-Dqs4PYMpmQJU/exec"; // ← 換成你的
+    const POLL_MS_ACTIVE = 1200;   // 前景分頁輪詢間隔（快）
+    const POLL_MS_HIDDEN = 6000;   // 背景分頁輪詢間隔（省資源）
+    const FETCH_TIMEOUT  = 1000;   // 單次請求逾時
 
-        // --- 顯示膠囊狀態（優先顯示休診，其次停止掛號） ---
+    let pollTimer = null;
+    let backoff = 0; // 失敗退避累積（毫秒）
+
+    function currentPollInterval(){
+      return document.visibilityState === 'visible' ? POLL_MS_ACTIVE : POLL_MS_HIDDEN;
+    }
+
+    async function fetchNumberOnce(){
+      // 超時控制
+      const ctrl = new AbortController();
+      const t = setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
+
+      try{
+        const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { 'pragma':'no-cache','cache-control':'no-cache' },
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        if(!res.ok) throw new Error(res.statusText);
+
+        const data = await res.json();
         renderStatusPill(data);
 
-        // --- 安全防呆 & 顯示叫號 ---
         const n = Number(data.number);
         if (!Number.isFinite(n) || n < 0 || n >= 1000) return;
+
         const current = String(n).padStart(3,'0');
-        if(current !== lastNumber){
+        if (current !== lastNumber){
           animateNumber(current);
           showPopup(`請 ${current} 號就診`);
           lastNumber = current;
         }
-      }catch(err){ console.error('抓號碼失敗', err); }
-    }
 
-    function renderStatusPill(data){
-      const box = document.getElementById('statusPill');
-      box.innerHTML = ''; // 清空
-      if (data.holiday === true){
-        const el = document.createElement('div');
-        el.className = 'pill red';
-        el.textContent = '現在時間沒有門診，休診中';
-        box.appendChild(el);
-      } else if (data.closed === true){
-        const el = document.createElement('div');
-        el.className = 'pill coral';
-        el.textContent = '當前時段門診已經停止掛號';
-        box.appendChild(el);
+        // 成功 => 清除退避
+        backoff = 0;
+      }catch(err){
+        clearTimeout(t);
+        // 失敗做線性退避（最多 +3s）
+        backoff = Math.min(backoff + 500, 3000);
+        // console.warn('抓號失敗：', err?.message || err);
       }
     }
 
+    function pollLoop(){
+      clearTimeout(pollTimer);
+      fetchNumberOnce().finally(() => {
+        pollTimer = setTimeout(pollLoop, currentPollInterval() + backoff);
+      });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      // 切回前景時立刻抓一次，手感更即時
+      if (document.visibilityState === 'visible') {
+        fetchNumberOnce();
+      }
+      // 依可見度調整輪詢間隔
+      clearTimeout(pollTimer);
+      pollTimer = setTimeout(pollLoop, currentPollInterval() + backoff);
+    });
+
+    /* ================== UI：時間與數字動畫 ================== */
     const pad2 = n => String(n).padStart(2,'0');
 
     function animateNumber(newNumber){
@@ -342,10 +373,22 @@
         `${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
     }
 
-    fetchNumber(); setInterval(fetchNumber,5000);
-    updateTWTime(); setInterval(updateTWTime,1000);
+    function renderStatusPill(data){
+      const box = document.getElementById('statusPill');
+      box.innerHTML = '';
+      if (data.holiday === true){
+        const el = document.createElement('div');
+        el.className = 'pill red';
+        el.textContent = '現在時間沒有門診，休診中';
+        box.appendChild(el);
+      } else if (data.closed === true){
+        const el = document.createElement('div');
+        el.className = 'pill coral';
+        el.textContent = '當前時段門診已經停止掛號';
+        box.appendChild(el);
+      }
+    }
 
-    /* 號碼變更 Popup（Logo 下方） */
     function showPopup(msg){
       const container=document.querySelector('.container');
       const logo=document.getElementById('clinicLogo');
@@ -355,8 +398,13 @@
       container.appendChild(popup);
       const top = logo.offsetTop + logo.offsetHeight + 8;
       popup.style.top = top + 'px';
-      setTimeout(()=>popup.remove(),5000);
+      setTimeout(()=>popup.remove(),3000);
     }
+
+    // 啟動
+    pollLoop();
+    updateTWTime();
+    setInterval(updateTWTime,1000);
   </script>
 </body>
 </html>
