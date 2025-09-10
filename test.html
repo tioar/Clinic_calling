@@ -74,7 +74,24 @@
   .pill{ display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; border-radius:999px; color:#fff; font-weight:900; box-shadow:0 8px 18px rgba(0,0,0,.12); letter-spacing:.5px; max-width:90%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:16px; }
   .pill.red{ background:var(--pill-red); }
   .pill.coral{ background:var(--pill-coral); }
-  h1{ margin:12px 0; color:var(--primary); letter-spacing:1px; }
+
+  /* 標題列（含重播按鈕） */
+  .title-row{
+    display:flex; align-items:center; justify-content:center;
+    gap:10px; margin:12px 0 6px;
+  }
+  h1{ margin:0; color:var(--primary); letter-spacing:1px; }
+  .repeat-btn{
+    width:42px; height:42px; border-radius:50%;
+    display:inline-grid; place-items:center;
+    background:var(--purple); color:#fff;
+    border:none; cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,.15), inset 0 0 0 2px rgba(255,255,255,.25);
+    transition:transform .08s ease, filter .2s ease, box-shadow .2s ease;
+  }
+  .repeat-btn:active{ transform:translateY(1px) scale(.97); }
+  .repeat-btn svg{ width:20px; height:20px; display:block; }
+
   .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
   .number-display{ display:flex; justify-content:center; gap:clamp(8px,2vw,16px); margin-bottom:16px; }
   .digit-card{
@@ -124,7 +141,19 @@
 
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <h1>目前看診號碼</h1>
+    <!-- 標題＋重播按鈕 -->
+    <div class="title-row">
+      <h1>目前看診號碼</h1>
+      <button id="replayBtn" class="repeat-btn" aria-label="重播語音">
+        <!-- 喇叭圖示（SVG） -->
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+          <path d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor"/>
+          <path d="M14.5 8.5a5 5 0 010 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M16.5 6a8 8 0 010 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+        </svg>
+      </button>
+    </div>
+
     <div class="now-time" id="twTime">—</div>
 
     <div class="number-display" id="numberDisplay">
@@ -184,7 +213,7 @@
     let lastNumber='000';
 
     /* ==================== 語音播報核心 ==================== */
-    // 你可在這裡自訂語速（0.1~10，預設 0.85 比較慢）
+    // 語速（0.1~10）：想更慢可改 0.7；想正常 1.0
     const TTS_RATE = 0.75;
 
     const Voice = { ready:false, unlocked:false, voices:[], zhVoice:null, enabled:false, timer:null };
@@ -213,29 +242,50 @@
       return true;
     }
 
-    // 避免「開頭被吃掉」：取消→短暫延遲→再 speak
+    // ====== 具有「暖機」的播放入口，避免開頭被吃掉 ======
     function speakText(txt){
-      if(!Voice.enabled || !Voice.ready || !txt) return;
+      if(!Voice.ready || !txt) return;
 
-      // 清掉可能的重入計時器
+      // allow one-shot even if toggle off (由 replayBtn 觸發時會暫時開啟)
+      if (!Voice.enabled && !speakText._oneshot) return;
+
       if (Voice.timer){ clearTimeout(Voice.timer); Voice.timer = null; }
 
+      const play = () => {
+        // 用 NBSP 暖機：大多數裝置不會出聲，只會極短促觸發 onend
+        const warm = new SpeechSynthesisUtterance('\u00A0');
+        warm.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
+        warm.rate = TTS_RATE; warm.pitch = 1; warm.volume = 0;
+
+        const safety = setTimeout(() => {
+          try{ speechSynthesis.cancel(); }catch(e){}
+          reallySpeak(txt);
+        }, 750);
+
+        warm.onend = () => {
+          clearTimeout(safety);
+          setTimeout(() => reallySpeak(txt), 60);
+        };
+
+        try{ speechSynthesis.resume(); }catch(e){}
+        speechSynthesis.speak(warm);
+      };
+
       if (speechSynthesis.speaking || speechSynthesis.pending){
-        speechSynthesis.cancel();
-        Voice.timer = setTimeout(()=> doSpeak(txt), 200); // 延遲一點點再播
+        try{ speechSynthesis.cancel(); }catch(e){}
+        Voice.timer = setTimeout(play, 220);
       } else {
-        Voice.timer = setTimeout(()=> doSpeak(txt), 180);  // 小暖機，避免被吃頭
+        Voice.timer = setTimeout(play, 100);
       }
     }
 
-    function doSpeak(txt){
+    function reallySpeak(txt){
       const u = new SpeechSynthesisUtterance(txt);
       if(!Voice.zhVoice || !Voice.voices.length) loadVoices();
       if(Voice.zhVoice) u.voice = Voice.zhVoice;
       u.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
-      u.rate = TTS_RATE;  // ← 語速在這裡調整
-      u.pitch = 1;
-      u.volume = 1;
+      u.rate = TTS_RATE;  u.pitch = 1;  u.volume = 1;
+      u.onstart = ()=>{ try{ speechSynthesis.resume(); }catch(e){} };
       speechSynthesis.speak(u);
     }
 
@@ -264,24 +314,38 @@
       return out;
     }
 
-    // 叫號（一次發話裡面「重複兩次」）
+    // 叫號（一次發話內重複兩次）
     function speakNumber(n){
-      const zh = zhRead(n);                // e.g. 129 → 一百二十九
-      const phrase = `${zh}號、${zh}號請進診間`;
+      const zh = zhRead(n);
+      const phrase = `第${zh}號、第${zh}號請進診間～`;
       speakText(phrase);
     }
 
-    // 開關事件
+    // 語音開關
     const voiceToggle = document.getElementById('voiceToggle');
     voiceToggle.addEventListener('change', ()=>{
       if(voiceToggle.checked){
         if(!Voice.unlocked && !unlockTTS()){ voiceToggle.checked = false; return; }
         Voice.enabled = true;
+        speakText._oneshot = true;  // 允許這句即使 toggle 剛打開也能播
         speakText('語音叫號已開啟');
+        speakText._oneshot = false;
       }else{
         Voice.enabled = false;
         speechSynthesis.cancel();
       }
+    });
+
+    // ✅ 重播按鈕：即使開關關閉，也允許「單次」播放
+    document.getElementById('replayBtn').addEventListener('click', ()=>{
+      const n = parseInt(lastNumber, 10);
+      if (!Number.isFinite(n)) return;
+      if (!Voice.unlocked) unlockTTS();
+      const prev = Voice.enabled;
+      speakText._oneshot = true;   // 暫時允許播報
+      speakNumber(n);
+      speakText._oneshot = false;
+      Voice.enabled = prev;
     });
 
     // 首次觸控自動解鎖（行動裝置友善）
@@ -314,7 +378,7 @@
           animateNumber(current);
           showPopup(`請 ${current} 號就診`);
           // 🔊 僅在變更時播報（不念前導 0）
-          speakNumber(n);
+          Voice.enabled && speakNumber(n);
           lastNumber = current;
         }
       }catch(err){ console.error('抓號碼失敗', err); }
