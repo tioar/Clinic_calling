@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>陳萬龍診所看診進度</title>
+<meta name="description" content="即時看診進度與門診資訊">
+<meta name="theme-color" content="#35579A">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="陳萬龍診所｜看診進度">
+<meta property="og:description" content="即時看診進度與門診資訊。">
+<meta property="og:image" content="og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://tioar.github.io/Clinic_calling/">
+<meta property="og:locale" content="zh_TW">
+
+<!-- CSP 安全補釘 -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  img-src 'self' https://raw.githubusercontent.com data:;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  script-src 'self' 'unsafe-inline';
+  connect-src https://script.google.com https://script.googleusercontent.com;
+  frame-ancestors 'none';
+  upgrade-insecure-requests">
+
+<!-- Icons -->
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --primary:#35579A;
+    --purple:#6B5AAE;
+    --soft:#A5B8D0;
+    --beige:#D8C0AD;
+    --accent:#6db337;    /* popup 綠 */
+    --bg:#F5EFE8;
+    --card:#FFFFFF;
+    --note:#F2F6FB;
+    --digit-red:#DC2626;
+
+    --pill-red:#E53935;  /* 休診 紅膠囊 */
+    --pill-coral:#F37163;/* 停止掛號 珊瑚膠囊 */
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    font-family:'Noto Sans TC',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background:var(--bg);
+    margin:0;
+    padding:clamp(16px,4vw,40px) max(12px,env(safe-area-inset-left)) clamp(24px,6vw,48px) max(12px,env(safe-area-inset-right));
+    display:flex; justify-content:center; color:#1c1c1c;
+  }
+  .container{
+    position:relative;
+    width:min(860px,96vw);
+    background:var(--card);
+    border-radius:36px;
+    padding:clamp(16px,4vw,32px);
+    text-align:center;
+    box-shadow:0 10px 30px rgba(53,87,154,0.10);
+    border:3px solid var(--primary);
+    overflow:visible;
+  }
+
+  /* 無縫循環跑馬燈 */
+  .marquee{
+    --gap: 2rem;
+    --speed: 45s;
+    background:var(--purple);
+    color:#fff;
+    border-radius:18px;
+    padding:10px 0;
+    margin:0 auto 10px;
+    overflow:hidden;
+    white-space:nowrap;
+    user-select:none;
+    touch-action:manipulation;
+    font-size:14px;
+  }
+  .marquee__track{
+    display:inline-flex; align-items:center;
+    width:max-content;
+    animation:marquee-loop var(--speed) linear infinite;
+  }
+  .marquee__track > span{ padding-right:var(--gap); flex-shrink:0; }
+  .marquee:hover .marquee__track{ animation-play-state:paused; }
+  @keyframes marquee-loop{
+    from{ transform:translateX(0); }
+    to  { transform:translateX(-50%); }
+  }
+
+  /* Logo */
+  .logo-wrap{ margin:10px 0 0; }
+  .logo{
+    height:clamp(120px, 22vw, 200px);
+    max-width:82vw; object-fit:contain;
+    filter:none; border:none; border-radius:0; background:#fff;
+  }
+
+  /* ⬇️ 膠囊提示區（置中，僅在需要時顯示） */
+  .pill-wrap{ display:flex; justify-content:center; margin:10px 0 6px; min-height:0; }
+  .pill{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:10px 18px; border-radius:999px; color:#fff; font-weight:900;
+    box-shadow:0 8px 18px rgba(0,0,0,.12); letter-spacing:.5px;
+    max-width:90%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:16px;
+  }
+  .pill.red{ background:var(--pill-red); }
+  .pill.coral{ background:var(--pill-coral); }
+
+  h1{ margin:12px 0; color:var(--primary); letter-spacing:1px; }
+  .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
+
+  /* 號碼卡 */
+  .number-display{
+    display:flex; justify-content:center; gap:clamp(8px,2vw,16px);
+    margin-bottom:16px; flex-wrap:nowrap;
+  }
+  .digit-card{
+    width:clamp(72px, 22vw, 110px);
+    height:clamp(92px, 28vw, 140px);
+    background:#fff; color:var(--digit-red);
+    font-family:'Manrope',sans-serif;
+    font-variant-numeric:tabular-nums;
+    font-size:clamp(56px,16vw,100px);
+    font-weight:800; line-height:1;
+    border-radius:28px;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; perspective:400px; overflow:hidden;
+    box-shadow:0 10px 24px rgba(53,87,154,.08), inset 0 0 0 3px var(--soft);
+  }
+  .digit-card .current, .digit-card .next{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; backface-visibility:hidden;
+  }
+  .digit-card .next{ transform:rotateX(-180deg); }
+  .flip .current{ animation:flipTop .5s forwards; }
+  .flip .next{ animation:flipBottom .5s forwards; }
+  @keyframes flipTop{0%{transform:rotateX(0)}100%{transform:rotateX(180deg)}}
+  @keyframes flipBottom{0%{transform:rotateX(-180deg)}100%{transform:rotateX(0)}}
+
+  /* 說明區 */
+  .note{
+    background:var(--note);
+    padding:16px 20px;
+    border-radius:22px;
+    margin:16px auto 12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+    color:#274a6b; font-weight:600;
+    width:min(760px,100%); text-align:center;
+  }
+  .note p{ margin:.35em 0; }
+
+  /* 調色帶 */
+  .palette{
+    height:8px; border-radius:6px; margin:8px auto 16px; width:min(560px,90%);
+    background:
+      linear-gradient(to right,
+        var(--beige) 0 22%,
+        var(--accent) 22% 45%,
+        var(--primary) 45% 82%,
+        var(--soft) 82% 100%);
+  }
+
+  .schedule{
+    margin-top:6px; max-width:100%;
+    border-radius:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  }
+
+  /* Popup（維持原本：號碼變動時短暫顯示） */
+  .popup{
+    position:absolute; left:50%;
+    transform:translateX(-50%);
+    background:var(--accent); color:#fff;
+    padding:14px 22px; border-radius:999px;
+    font-size:20px; z-index:10; font-weight:800;
+    opacity:0; animation:fadeInOut 3s forwards;
+    box-shadow:0 12px 26px rgba(0,0,0,.15);
+    pointer-events:none; white-space:nowrap;
+    max-width:90%; overflow:hidden; text-overflow:ellipsis;
+  }
+  @keyframes fadeInOut{
+    0%{opacity:0; transform:translate(-50%, -6px)}
+    10%{opacity:1; transform:translate(-50%, 0)}
+    90%{opacity:1; transform:translate(-50%, 0)}
+    100%{opacity:0; transform:translate(-50%, -6px)}
+  }
+
+  /* ⬇️ 新增：語音叫號「紫色膠囊開關」樣式 */
+  .voice-row{
+    display:flex; align-items:center; justify-content:center;
+    gap:12px; margin:14px auto 0;
+    user-select:none;
+  }
+  .voice-label{
+    font-weight:900; color:#4b3e7a; letter-spacing:.5px;
+  }
+  .switch{
+    position:relative; width:64px; height:36px;
+  }
+  .switch input{
+    position:absolute; width:100%; height:100%; opacity:0; margin:0; cursor:pointer;
+  }
+  .track{
+    position:absolute; inset:0; background:#d9d2f1;
+    border-radius:999px; transition:.25s ease; box-shadow:inset 0 0 0 2px rgba(0,0,0,.06);
+  }
+  .thumb{
+    position:absolute; top:3px; left:3px; width:30px; height:30px;
+    border-radius:50%; background:#fff; display:grid; place-items:center;
+    transition:.25s ease; box-shadow:0 4px 12px rgba(0,0,0,.15);
+    font-size:18px;
+  }
+  .switch input:checked ~ .track{ background:var(--purple); }
+  .switch input:checked ~ .thumb{ left:31px; color:var(--purple); }
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- 跑馬燈 -->
+    <div class="marquee" aria-label="診所訊息跑馬燈">
+      <div class="marquee__track" id="marqueeTrack">
+        <span>✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（最晚報到10:30）；☁︎ 午診 14:00–17:00（最晚報到16:00）；☾ 晚診 18:00–20:30（最晚報到20:00）。逾時視同放棄，名額將釋出給現場掛號。</span>
+        <span aria-hidden="true">✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（最晚報到10:30）；☁︎ 午診 14:00–17:00（最晚報到16:00）；☾ 晚診 18:00–20:30（最晚報到20:00）。逾時視同放棄，名額將釋出給現場掛號。</span>
+      </div>
+    </div>
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
+    </div>
+
+    <!-- ⬇️ 這裡是「休診／停止掛號」膠囊提示容器 -->
+    <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
+
+    <h1>目前看診號碼</h1>
+    <div class="now-time" id="twTime">—</div>
+
+    <div class="number-display" id="numberDisplay">
+      <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
+      <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
+      <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
+    </div>
+
+    <div class="note">
+      <p>♦︎ 雲端號碼僅供參考，實際叫號以現場為準。每位患者約 3–5 分鐘，請提前到場在可看到燈號的位置等候以免過號。</p>
+      <p>♦︎ 若已過號請再次向櫃檯報到，將依現場狀況調整安排。</p>
+      <p>♦︎ 門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)5152971。</p>
+    </div>
+
+    <div class="palette" aria-hidden="true"></div>
+    <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
+
+    <!-- ⬇️ 新增：語音叫號「紫色膠囊開關」（放在門診表圖片下方） -->
+    <div class="voice-row" aria-live="polite">
+      <label class="switch" aria-label="語音叫號開關">
+        <input type="checkbox" id="voiceToggle" />
+        <div class="track"></div>
+        <div class="thumb">🔊</div>
+      </label>
+      <div class="voice-label">語音叫號</div>
+    </div>
+    <!-- ▲ 新增結束 -->
+  </div>
+
+  <script>
+    /* 跑馬燈可長按/滑過暫停 */
+    (function(){
+      const marquee = document.querySelector('.marquee');
+      const track = document.getElementById('marqueeTrack');
+      const pause = () => track.style.animationPlayState = 'paused';
+      const run   = () => track.style.animationPlayState = 'running';
+      marquee.addEventListener('pointerdown', pause);
+      marquee.addEventListener('pointerup', run);
+      marquee.addEventListener('pointerleave', run);
+      marquee.addEventListener('pointercancel', run);
+    })();
+
+    /* 圖片備援 */
+    (function(){
+      const logo = document.getElementById('clinicLogo');
+      const logoFallbacks = [
+        './logo.png',
+        'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo1.jpg',
+        'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo.png'
+      ];
+      let li=0;
+      logo.onerror = function(){
+        if(li < logoFallbacks.length){ this.src = logoFallbacks[li++]; }
+        else { this.style.display='none'; }
+      };
+
+      const sch = document.getElementById('scheduleImg');
+      const schFallbacks = ['https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'];
+      let si=0;
+      sch.onerror = function(){
+        if(si < schFallbacks.length){ this.src = schFallbacks[si++]; }
+        else { this.style.display='none'; }
+      };
+    })();
+
+    let lastNumber='000';
+
+    /* =============== 新增：語音播報核心（支援 iOS/Safari） =============== */
+    const Voice = {
+      ready:false, unlocked:false, voices:[], zhVoice:null, enabled:false
+    };
+
+    function loadVoices(){
+      const list = window.speechSynthesis?.getVoices?.() || [];
+      Voice.voices = list;
+      Voice.zhVoice =
+        list.find(v => v.lang?.toLowerCase().startsWith('zh-tw')) ||
+        list.find(v => v.lang?.toLowerCase().startsWith('zh-hk')) ||
+        list.find(v => v.lang?.toLowerCase().startsWith('zh-cn')) ||
+        list.find(v => v.lang?.toLowerCase().startsWith('zh'));
+    }
+    function unlockTTS(){
+      if(!('speechSynthesis' in window)){
+        alert('此瀏覽器不支援語音播報，請改用 Chrome / Safari / Edge。');
+        return false;
+      }
+      loadVoices();
+      if(typeof speechSynthesis.onvoiceschanged !== 'undefined'){
+        speechSynthesis.onvoiceschanged = () => loadVoices();
+      }
+      try{ speechSynthesis.resume(); }catch(e){}
+      Voice.unlocked = true; Voice.ready = true;
+      return true;
+    }
+    function speakText(txt){
+      if(!Voice.enabled || !Voice.ready || !txt) return;
+      if(speechSynthesis.speaking || speechSynthesis.pending){
+        speechSynthesis.cancel();
+        try{ speechSynthesis.resume(); }catch(e){}
+      }
+      const u = new SpeechSynthesisUtterance(txt);
+      if(!Voice.zhVoice || !Voice.voices.length) loadVoices();
+      if(Voice.zhVoice) u.voice = Voice.zhVoice;
+      u.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
+      u.rate = 1; u.pitch = 1; u.volume = 1;
+      u.onstart = ()=>{ try{ speechSynthesis.resume(); }catch(e){} };
+      speechSynthesis.speak(u);
+    }
+    function numToZh(str){
+      const map={'0':'零','1':'一','2':'二','3':'三','4':'四','5':'五','6':'六','7':'七','8':'八','9':'九'};
+      return String(str).split('').map(d=>map[d]??d).join('');
+    }
+    function speakNumber(numberStr){
+      const zh = numToZh(numberStr); // 維持前導零：例如 "007" -> "零零七"
+      const phrase = `第${zh}號、第${zh}號請進診間～`;
+      speakText(phrase);
+    }
+    // 開關事件
+    const voiceToggle = document.getElementById('voiceToggle');
+    voiceToggle.addEventListener('change', ()=>{
+      if(voiceToggle.checked){
+        if(!Voice.unlocked && !unlockTTS()){
+          voiceToggle.checked = false; return;
+        }
+        Voice.enabled = true;
+        speakText('語音叫號已開啟');
+      }else{
+        Voice.enabled = false;
+        speechSynthesis.cancel();
+      }
+    });
+    // 行動裝置友善：首次觸控自動解鎖
+    window.addEventListener('touchend', function once(){
+      if(!Voice.unlocked){ unlockTTS(); }
+      window.removeEventListener('touchend', once, true);
+    }, true);
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.visibilityState === 'visible'){
+        try{ speechSynthesis.resume(); }catch(e){}
+      }
+    });
+    /* ============= 語音播報核心：到此結束 ============= */
+
+    /* 叫號＋旗標拉回與呈現 */
+    async function fetchNumber(){
+      try{
+        const res = await fetch("https://script.google.com/macros/s/AKfycbxCxob5Ec0N7DqaT8ezOoNHgXjO9vOJ7ooEDUYiTnbKxXX4i9fFxuf-Dqs4PYMpmQJU/exec");
+        const data = await res.json();
+
+        // --- 顯示膠囊狀態（優先顯示休診，其次停止掛號） ---
+        renderStatusPill(data);
+
+        // --- 安全防呆 & 顯示叫號 ---
+        const n = Number(data.number);
+        if (!Number.isFinite(n) || n < 0 || n >= 1000) return;
+        const current = String(n).padStart(3,'0');
+        if(current !== lastNumber){
+          animateNumber(current);
+          showPopup(`請 ${current} 號就診`);
+          // ⬇️ 新增：號碼變動時語音播報（需開關開啟）
+          speakNumber(current);
+          lastNumber = current;
+        }
+      }catch(err){ console.error('抓號碼失敗', err); }
+    }
+
+    function renderStatusPill(data){
+      const box = document.getElementById('statusPill');
+      box.innerHTML = ''; // 清空
+      if (data.holiday === true){
+        const el = document.createElement('div');
+        el.className = 'pill red';
+        el.textContent = '現在時間沒有門診，休診中';
+        box.appendChild(el);
+      } else if (data.closed === true){
+        const el = document.createElement('div');
+        el.className = 'pill coral';
+        el.textContent = '當前時段門診已經停止掛號';
+        box.appendChild(el);
+      }
+    }
+
+    const pad2 = n => String(n).padStart(2,'0');
+
+    function animateNumber(newNumber){
+      const digits=document.querySelectorAll('#numberDisplay .digit-card');
+      newNumber.split('').forEach((d,i)=>{
+        const card=digits[i];
+        const cur=card.querySelector('.current');
+        const nxt=card.querySelector('.next');
+        if(cur.innerText!==d){
+          nxt.innerText=d;
+          card.classList.add('flip');
+          setTimeout(()=>{ cur.innerText=d; card.classList.remove('flip'); },500);
+        }
+      });
+    }
+
+    function updateTWTime(){
+      const el=document.getElementById('twTime');
+      const now = new Date();
+      const tw = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
+      const wMap = ['日','一','二','三','四','五','六'];
+      el.textContent =
+        `${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())} (${wMap[tw.getDay()]}) `+
+        `${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
+    }
+
+    fetchNumber(); setInterval(fetchNumber,5000);
+    updateTWTime(); setInterval(updateTWTime,1000);
+
+    /* 號碼變更 Popup（Logo 下方） */
+    function showPopup(msg){
+      const container=document.querySelector('.container');
+      const logo=document.getElementById('clinicLogo');
+      const popup=document.createElement('div');
+      popup.className='popup';
+      popup.textContent=msg;
+      container.appendChild(popup);
+      const top = logo.offsetTop + logo.offsetHeight + 8;
+      popup.style.top = top + 'px';
+      setTimeout(()=>popup.remove(),5000);
+    }
+  </script>
+</body>
+</html>
