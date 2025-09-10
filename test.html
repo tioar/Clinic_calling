@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
@@ -80,7 +80,7 @@
     display:flex; align-items:center; justify-content:center;
     gap:10px; margin:12px 0 6px;
   }
-  h1{ margin:0; color:var(--primary); letter-spacing:1px; }
+  h1{ margin:0; color:#35579A; letter-spacing:1px; }
   .repeat-btn{
     width:42px; height:42px; border-radius:50%;
     display:inline-grid; place-items:center;
@@ -114,7 +114,6 @@
   .schedule{ margin-top:6px; max-width:100%; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
   .popup{ position:absolute; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:14px 22px; border-radius:999px; font-size:20px; z-index:10; font-weight:800; opacity:0; animation:fadeInOut 3s forwards; box-shadow:0 12px 26px rgba(0,0,0,.15); pointer-events:none; white-space:nowrap; max-width:90%; overflow:hidden; text-overflow:ellipsis; }
   @keyframes fadeInOut{0%{opacity:0; transform:translate(-50%,-6px)}10%{opacity:1; transform:translate(-50%,0)}90%{opacity:1}100%{opacity:0; transform:translate(-50%,-6px)}}
-  /* 新增：紫色膠囊「語音叫號」開關 */
   .voice-row{ display:flex; align-items:center; justify-content:center; gap:12px; margin:14px auto 0; user-select:none; }
   .voice-label{ font-weight:900; color:#4b3e7a; letter-spacing:.5px; }
   .switch{ position:relative; width:64px; height:36px; }
@@ -170,7 +169,6 @@
     <div class="palette" aria-hidden="true"></div>
     <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
 
-    <!-- ✅ 新增：紫色膠囊開關（放在門診表圖片下方） -->
     <div class="voice-row" aria-live="polite">
       <label class="switch" aria-label="語音叫號開關">
         <input type="checkbox" id="voiceToggle" />
@@ -211,25 +209,20 @@
 
     let lastNumber='000';
 
-    /* ==================== 低延遲：抓號碼設定 ==================== */
-    const POLL_MS = 1500;   // ← 抓號碼頻率（1.5s）
-    const FETCH_TIMEOUT = 1200; // ← 單次請求最長 1.2s
+    /* 抓號設定 */
+    const POLL_MS = 1500;
+    const FETCH_TIMEOUT = 1200;
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCxob5Ec0N7DqaT8ezOoNHgXjO9vOJ7ooEDUYiTnbKxXX4i9fFxuf-Dqs4PYMpmQJU/exec"; // ← 換成你最新的 /exec
 
-    /* ==================== 語音播報核心（動態暖機） ==================== */
-    const TTS_RATE = 0.75;  // 語速（0.1~10）
-
-    // 依瀏覽器微調暖機延遲
+    /* ===== 語音設定（與你原邏輯一致） ===== */
+    const TTS_RATE = 0.75;
     const UA = navigator.userAgent.toLowerCase();
     const isWinChrome = UA.includes('windows') && UA.includes('chrome') && !UA.includes('edg');
-    const isAndroidChrome = UA.includes('android') && UA.includes('chrome');
-    const isIOS = /iphone|ipad|ipod/.test(UA);
-
     const WARM_CANCEL_DELAY = isWinChrome ? 220 : 120;
     const WARM_PLAY_DELAY   = isWinChrome ? 100 : 60;
     const WARM_SAFETY_MS    = isWinChrome ? 800 : 650;
 
     const Voice = { ready:false, unlocked:false, voices:[], zhVoice:null, enabled:false, timer:null };
-
     function loadVoices(){
       const list = window.speechSynthesis?.getVoices?.() || [];
       Voice.voices = list;
@@ -240,156 +233,100 @@
         list.find(v => v.lang?.toLowerCase().startsWith('zh'));
     }
     function unlockTTS(){
-      if(!('speechSynthesis' in window)){
-        alert('此瀏覽器不支援語音播報，請改用 Chrome / Safari / Edge。');
-        return false;
-      }
+      if(!('speechSynthesis' in window)){ alert('此瀏覽器不支援語音播報'); return false; }
       loadVoices();
       if(typeof speechSynthesis.onvoiceschanged !== 'undefined'){
         speechSynthesis.onvoiceschanged = () => loadVoices();
       }
       try{ speechSynthesis.resume(); }catch(e){}
-      Voice.unlocked = true; Voice.ready = true;
-      return true;
+      Voice.unlocked = true; Voice.ready = true; return true;
     }
-
     function speakText(txt){
       if(!Voice.ready || !txt) return;
       if (!Voice.enabled && !speakText._oneshot) return;
       if (Voice.timer){ clearTimeout(Voice.timer); Voice.timer = null; }
-
       const play = () => {
-        const warm = new SpeechSynthesisUtterance('\u00A0'); // NBSP 暖機（無聲）
+        const warm = new SpeechSynthesisUtterance('\u00A0');
         warm.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
         warm.rate = TTS_RATE; warm.pitch = 1; warm.volume = 0;
-
-        const safety = setTimeout(() => {
-          try{ speechSynthesis.cancel(); }catch(e){}
-          reallySpeak(txt);
-        }, WARM_SAFETY_MS);
-
-        warm.onend = () => {
-          clearTimeout(safety);
-          setTimeout(() => reallySpeak(txt), WARM_PLAY_DELAY);
-        };
-
+        const safety = setTimeout(() => { try{ speechSynthesis.cancel(); }catch(e){}; reallySpeak(txt); }, WARM_SAFETY_MS);
+        warm.onend = () => { clearTimeout(safety); setTimeout(() => reallySpeak(txt), WARM_PLAY_DELAY); };
         try{ speechSynthesis.resume(); }catch(e){}
         speechSynthesis.speak(warm);
       };
-
       if (speechSynthesis.speaking || speechSynthesis.pending){
-        try{ speechSynthesis.cancel(); }catch(e){}
-        Voice.timer = setTimeout(play, WARM_CANCEL_DELAY);
-      } else {
-        Voice.timer = setTimeout(play, WARM_PLAY_DELAY);
-      }
+        try{ speechSynthesis.cancel(); }catch(e){}; setTimeout(play, WARM_CANCEL_DELAY);
+      } else { setTimeout(play, WARM_PLAY_DELAY); }
     }
-
     function reallySpeak(txt){
-      // 避免 Android 念 tilde：把尾巴 ~/～ 改成全形句號
       const safeTail = String(txt).replace(/[~～]+$/g,'。');
-      // 在 Windows Chrome 偶發吞頭時：前綴全形空白+逗號；iOS/Android 可省略
       const prefix = isWinChrome ? '\u3000，' : '';
       const u = new SpeechSynthesisUtterance(prefix + safeTail);
       if(!Voice.zhVoice || !Voice.voices.length) loadVoices();
       if(Voice.zhVoice) u.voice = Voice.zhVoice;
       u.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
-      u.rate = TTS_RATE;  u.pitch = 1;  u.volume = 1;
+      u.rate = TTS_RATE; u.pitch = 1; u.volume = 1;
       u.onstart = ()=>{ try{ speechSynthesis.resume(); }catch(e){} };
       speechSynthesis.speak(u);
     }
-
-    // 阿拉伯數字 → 國語常用讀法（0~999）
     function zhRead(n){
       n = Math.max(0, Math.min(999, Math.floor(n)));
       const d = ['零','一','二','三','四','五','六','七','八','九'];
       if (n === 0) return '零';
-      let out = '';
-      const h = Math.floor(n / 100);
-      const t = Math.floor((n % 100) / 10);
-      const u = n % 10;
-      if (h > 0){
-        out += d[h] + '百';
-        if (t === 0 && u > 0) out += '零';
-      }
-      if (t > 0){
-        if (t === 1 && h === 0) out += '十';
-        else out += d[t] + '十';
-      }
-      if (u > 0){
-        out += d[u];
-      }
+      let out = '', h = Math.floor(n/100), t = Math.floor((n%100)/10), u = n%10;
+      if(h>0){ out += d[h]+'百'; if(t===0 && u>0) out+='零'; }
+      if(t>0){ out += (t===1 && h===0 ? '' : d[t]) + '十'; }
+      if(u>0){ out += d[u]; }
       return out;
     }
-
-    // 叫號（一次發話內重複兩次；結尾全形句號；不念「就診」）
     function speakNumber(n){
       const zh = zhRead(n);
-      const phrase = `第${zh}號、第${zh}號請進診間。`;
-      speakText(phrase);
+      speakText(`第${zh}號、第${zh}號請進診間。`);
     }
-
-    // 語音開關
     const voiceToggle = document.getElementById('voiceToggle');
     voiceToggle.addEventListener('change', ()=>{
       if(voiceToggle.checked){
-        if(!Voice.unlocked && !unlockTTS()){ voiceToggle.checked = false; return; }
-        Voice.enabled = true;
-        speakText._oneshot = true;
-        speakText('語音叫號已開啟。');
-        speakText._oneshot = false;
-      }else{
-        Voice.enabled = false;
-        speechSynthesis.cancel();
-      }
+        if(!Voice.unlocked && !unlockTTS()){ voiceToggle.checked=false; return; }
+        Voice.enabled = true; speakText._oneshot = true; speakText('語音叫號已開啟。'); speakText._oneshot = false;
+      }else{ Voice.enabled = false; speechSynthesis.cancel(); }
     });
-
-    // 重播按鈕：即使開關關閉，也允許「單次」播放
     document.getElementById('replayBtn').addEventListener('click', ()=>{
-      const n = parseInt(lastNumber, 10);
-      if (!Number.isFinite(n)) return;
-      if (!Voice.unlocked) unlockTTS();
-      const prev = Voice.enabled;
-      speakText._oneshot = true;
-      speakNumber(n);
-      speakText._oneshot = false;
-      Voice.enabled = prev;
+      const n = parseInt(lastNumber,10); if(!Number.isFinite(n)) return;
+      if(!Voice.unlocked) unlockTTS();
+      const prev = Voice.enabled; speakText._oneshot = true; speakNumber(n); speakText._oneshot=false; Voice.enabled = prev;
     });
+    window.addEventListener('touchend', function once(){ if(!Voice.unlocked){ unlockTTS(); } window.removeEventListener('touchend', once, true); }, true);
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ try{ speechSynthesis.resume(); }catch(e){} } });
 
-    // 行動裝置友善解鎖 & 視窗回前景 resume
-    window.addEventListener('touchend', function once(){
-      if(!Voice.unlocked){ unlockTTS(); }
-      window.removeEventListener('touchend', once, true);
-    }, true);
-    document.addEventListener('visibilitychange', ()=>{
-      if(document.visibilityState === 'visible'){
-        try{ speechSynthesis.resume(); }catch(e){}
-      }
-    });
-
-    /* ==================== 低延遲：抓號碼流程 ==================== */
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCxob5Ec0N7DqaT8ezOoNHgXjO9vOJ7ooEDUYiTnbKxXX4i9fFxuf-Dqs4PYMpmQJU/exec"; // ← 換成你的
-
-    async function fetchNumber(){
+    /* ===== 抓號：fetch + JSONP 後備 ===== */
+    async function fetchJSON() {
       const ctrl = new AbortController();
       const t = setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
+      const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, { cache:'no-store', signal: ctrl.signal });
+      clearTimeout(t);
+      if(!res.ok) throw new Error(res.statusText);
+      return res.json();
+    }
+
+    function fetchJSONP() {
+      return new Promise((resolve, reject) => {
+        const cbName = 'onClinicData_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
+        const s = document.createElement('script');
+        const timeout = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 5000);
+        window[cbName] = (data) => { cleanup(); resolve(data); };
+        function cleanup(){ clearTimeout(timeout); delete window[cbName]; s.remove(); }
+        s.src = `${GAS_URL}?callback=${cbName}&ts=${Date.now()}`;
+        s.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
+        document.head.appendChild(s);
+      });
+    }
+
+    async function fetchNumber(){
       try{
-        // 加上 ts 打破快取；no-cache 標頭避免中間代理快取
-    const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, {
-      cache: 'no-store',
-        // 不要自訂 headers，保持「簡單請求」避免 preflight
-      signal: ctrl.signal
-    });
-
-        clearTimeout(t);
-        if(!res.ok) throw new Error(res.statusText);
-        const data = await res.json();
-
+        const data = await fetchJSON().catch(async () => await fetchJSONP());
         renderStatusPill(data);
-
         const n = Number(data.number);
-        if (!Number.isFinite(n) || n < 0 || n >= 1000) return; // 防呆
-
+        if (!Number.isFinite(n) || n < 0 || n >= 1000) return;
         const current = String(n).padStart(3,'0');
         if(current !== lastNumber){
           animateNumber(current);
@@ -398,9 +335,7 @@
           lastNumber = current;
         }
       }catch(err){
-        clearTimeout(t);
-        // 忽略超時/短暫錯誤，下個輪次再抓
-        // console.warn('抓號碼延遲或失敗：', err?.message || err);
+        // console.warn('抓號失敗：', err?.message || err);
       }
     }
 
@@ -421,7 +356,6 @@
     }
 
     const pad2 = n => String(n).padStart(2,'0');
-
     function animateNumber(newNumber){
       const digits=document.querySelectorAll('#numberDisplay .digit-card');
       newNumber.split('').forEach((d,i)=>{
@@ -435,23 +369,14 @@
         }
       });
     }
-
     function updateTWTime(){
       const el=document.getElementById('twTime');
       const now = new Date();
       const tw = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
       const wMap = ['日','一','二','三','四','五','六'];
-      el.textContent =
-        `${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())} (${wMap[tw.getDay()]}) `+
-        `${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
+      el.textContent = `${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())} (${wMap[tw.getDay()]}) `+
+                       `${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
     }
-
-    // 開始輪詢（低延遲）
-    fetchNumber();
-    setInterval(fetchNumber, POLL_MS);
-    updateTWTime();
-    setInterval(updateTWTime, 1000);
-
     function showPopup(msg){
       const container=document.querySelector('.container');
       const logo=document.getElementById('clinicLogo');
@@ -463,6 +388,11 @@
       popup.style.top = top + 'px';
       setTimeout(()=>popup.remove(),3000);
     }
+
+    // 啟動
+    fetchNumber();
+    setInterval(fetchNumber, POLL_MS);
+    updateTWTime(); setInterval(updateTWTime, 1000);
   </script>
 </body>
 </html>
