@@ -58,6 +58,8 @@
     border:3px solid var(--primary);
     overflow:visible;
   }
+
+  /* 跑馬燈 */
   .marquee{
     --gap: 2rem; --speed: 45s;
     background:var(--purple); color:#fff;
@@ -68,6 +70,7 @@
   .marquee__track > span{ padding-right:var(--gap); flex-shrink:0; }
   .marquee:hover .marquee__track{ animation-play-state:paused; }
   @keyframes marquee-loop{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
   .logo-wrap{ margin:10px 0 0; }
   .logo{ height:clamp(120px,22vw,200px); max-width:82vw; object-fit:contain; background:#fff; }
 
@@ -76,16 +79,13 @@
   .pill.red{ background:var(--pill-red); }
   .pill.coral{ background:var(--pill-coral); }
 
-  /* 標題列（不再放開關） */
-  .title-row{
-    display:flex; align-items:center; justify-content:center;
-    gap:12px; margin:12px 0 6px; flex-wrap:wrap;
-  }
+  /* 標題 */
+  .title-row{ display:flex; align-items:center; justify-content:center; gap:12px; margin:12px 0 6px; flex-wrap:wrap; }
   h1{ margin:0; color:#35579A; letter-spacing:1px; }
 
   .now-time{ color:#5f7396; font-weight:700; margin-bottom:18px; }
 
-  .number-display{ display:flex; justify-content:center; gap:clamp(8px,2vw,16px); margin-bottom:10px; }
+  .number-display{ display:flex; justify-content:center; gap:clamp(8px,2vw,16px); margin-bottom:8px; }
   .digit-card{
     width:clamp(72px,22vw,110px); height:clamp(92px,28vw,140px);
     background:#fff; color:var(--digit-red); font-family:'Manrope',sans-serif;
@@ -101,23 +101,30 @@
   @keyframes flipTop{0%{transform:rotateX(0)}100%{transform:rotateX(180deg)}}
   @keyframes flipBottom{0%{transform:rotateX(-180deg)}100%{transform:rotateX(0)}}
 
-  /* 語音開關：移到號碼下方；手機可換行 */
+  /* 語音開關（放在號碼下方；手機也維持單行） */
   .voice-row{
     display:flex; align-items:center; justify-content:center;
-    gap:10px; margin:8px 0 14px;
-    flex-wrap:wrap;
+    gap:10px; margin:10px 0 16px;
+    flex-wrap:nowrap; /* 優先單行 */
   }
-  .switch{ position:relative; width:64px; height:36px; }
+  .voice-label{
+    font-weight:900; color:#4b3e7a; letter-spacing:.5px;
+    font-size:clamp(14px,3.5vw,18px);
+  }
+  .switch{ position:relative; width:64px; height:36px; flex:0 0 auto; }
   .switch input{ position:absolute; inset:0; width:100%; height:100%; opacity:0; margin:0; cursor:pointer; }
   .track{ position:absolute; inset:0; background:#d9d2f1; border-radius:999px; transition:.25s ease; box-shadow:inset 0 0 0 2px rgba(0,0,0,.06); }
   .thumb{ position:absolute; top:3px; left:3px; width:30px; height:30px; border-radius:50%; background:#fff; display:grid; place-items:center; transition:.25s ease; box-shadow:0 4px 12px rgba(0,0,0,.15); font-size:18px; }
   .switch input:checked ~ .track{ background:var(--purple); }
   .switch input:checked ~ .thumb{ left:31px; color:var(--purple); }
-  .voice-label{ font-weight:900; color:#4b3e7a; letter-spacing:.5px; }
 
-  /* 小螢幕：讓標籤與開關可各自換行置中 */
-  @media (max-width:520px){
-    .voice-row{ flex-direction:column; gap:6px; }
+  /* 超小螢幕：縮小字與按鈕，保單行（例如 320px 寬） */
+  @media (max-width:380px){
+    .voice-label{ font-size:13px; }
+    .switch{ width:52px; height:30px; }
+    .thumb{ width:24px; height:24px; top:3px; left:3px; font-size:16px; }
+    .switch input:checked ~ .thumb{ left:25px; }
+    .voice-row{ gap:8px; }
   }
 
   .note{ background:var(--note); padding:16px 20px; border-radius:22px; margin:16px auto 12px; box-shadow:0 4px 12px rgba(0,0,0,0.06); color:#274a6b; font-weight:600; width:min(760px,100%); text-align:center; }
@@ -131,10 +138,8 @@
 
   /* 無障礙：僅給螢幕閱讀器的提示區域 */
   .sr-only{
-    position:absolute !important;
-    width:1px; height:1px;
-    padding:0; margin:-1px;
-    overflow:hidden; clip:rect(0,0,0,0);
+    position:absolute !important; width:1px; height:1px;
+    padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
     border:0; white-space:nowrap;
   }
 </style>
@@ -155,22 +160,22 @@
 
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <!-- 標題（開關已移走） -->
     <div class="title-row">
       <h1 id="sectionTitle">目前看診號碼</h1>
     </div>
 
     <div class="now-time" id="twTime">—</div>
 
-    <!-- 號碼顯示（加 aria-live 讓讀屏可聽到變化） -->
+    <!-- 號碼顯示：讓讀屏能聽到變化 -->
     <div class="number-display" id="numberDisplay" aria-live="polite" aria-atomic="true" aria-label="目前看診號碼">
       <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
       <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
       <div class="digit-card"><div class="current">0</div><div class="next">0</div></div>
     </div>
 
-    <!-- ✅ 語音開關：移到號碼下方；手機可獨立一行 -->
+    <!-- 開啟語音叫號提醒（號碼下方／行內顯示） -->
     <div class="voice-row">
+      <div class="voice-label" id="voiceText">開啟語音叫號提醒</div>
       <label class="switch" id="voiceSwitchLabel" aria-label="開啟語音叫號提醒開關">
         <input
           type="checkbox"
@@ -183,8 +188,7 @@
         <div class="track"></div>
         <div class="thumb" aria-hidden="true">🔊</div>
       </label>
-      <div class="voice-label" id="voiceText">開啟語音叫號提醒</div>
-      <div id="voiceHint" class="sr-only">開啟後，號碼更改時會自動語音播報。</div>
+      <div id="voiceHint" class="sr-only">開啟後，號碼變更時會自動語音播報。</div>
     </div>
 
     <!-- 給讀屏的即時狀態提示 -->
@@ -230,10 +234,10 @@
 
     let lastNumber='000';
 
-    /* 抓號設定 */
-    const POLL_MS = 1500;
-    const FETCH_TIMEOUT = 1200;
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec"; // ← 你的 /exec
+    /* 抓號設定（單一宣告，避免重覆） */
+    const POLL_MS = 1500;           // 輪詢間隔
+    const FETCH_TIMEOUT = 1200;     // 單次請求逾時
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec"; // ← 換成你的 /exec
 
     /* ===== 語音設定 ===== */
     const TTS_RATE = 0.75;
@@ -267,26 +271,39 @@
       if (!Voice.enabled && !speakText._oneshot) return;
       if (Voice.timer){ clearTimeout(Voice.timer); Voice.timer = null; }
       const play = () => {
-        const warm = new SpeechSynthesisUtterance('\u00A0');
+        const warm = new SpeechSynthesisUtterance('\u00A0'); // 無聲暖機
         warm.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
         warm.rate = TTS_RATE; warm.pitch = 1; warm.volume = 0;
-        const safety = setTimeout(() => { try{ speechSynthesis.cancel(); }catch(e){}; reallySpeak(txt); }, WARM_SAFETY_MS);
-        warm.onend = () => { clearTimeout(safety); setTimeout(() => reallySpeak(txt), WARM_PLAY_DELAY); };
+
+        const safety = setTimeout(() => {
+          try{ speechSynthesis.cancel(); }catch(e){}
+          reallySpeak(txt);
+        }, WARM_SAFETY_MS);
+
+        warm.onend = () => {
+          clearTimeout(safety);
+          setTimeout(() => reallySpeak(txt), WARM_PLAY_DELAY);
+        };
+
         try{ speechSynthesis.resume(); }catch(e){}
         speechSynthesis.speak(warm);
       };
+
       if (speechSynthesis.speaking || speechSynthesis.pending){
-        try{ speechSynthesis.cancel(); }catch(e){}; setTimeout(play, WARM_CANCEL_DELAY);
-      } else { setTimeout(play, WARM_PLAY_DELAY); }
+        try{ speechSynthesis.cancel(); }catch(e){}
+        setTimeout(play, WARM_CANCEL_DELAY);
+      } else {
+        setTimeout(play, WARM_PLAY_DELAY);
+      }
     }
     function reallySpeak(txt){
-      const safeTail = String(txt).replace(/[~～]+$/g,'。');
-      const prefix = isWinChrome ? '\u3000，' : '';
+      const safeTail = String(txt).replace(/[~～]+$/g,'。');      // Android 尾字防呆
+      const prefix = isWinChrome ? '\u3000，' : '';               // Windows Chrome 偶發吞頭防呆
       const u = new SpeechSynthesisUtterance(prefix + safeTail);
       if(!Voice.zhVoice || !Voice.voices.length) loadVoices();
       if(Voice.zhVoice) u.voice = Voice.zhVoice;
       u.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
-      u.rate = TTS_RATE; u.pitch = 1; u.volume = 1;
+      u.rate = TTS_RATE;  u.pitch = 1;  u.volume = 1;
       u.onstart = ()=>{ try{ speechSynthesis.resume(); }catch(e){} };
       speechSynthesis.speak(u);
     }
@@ -305,11 +322,11 @@
       speakText(`第${zh}號、第${zh}號請進診間。`);
     }
 
-    // 無障礙：螢幕閱讀器提示
+    // 無障礙讀屏提示
     const srStatus = document.getElementById('srStatus');
     function sayToSR(text){ srStatus.textContent = text; }
 
-    // 語音開關（無障礙屬性同步）
+    // 語音開關（同步 aria 狀態）
     const voiceToggle = document.getElementById('voiceToggle');
     voiceToggle.addEventListener('change', ()=>{
       voiceToggle.setAttribute('aria-checked', voiceToggle.checked ? 'true' : 'false');
@@ -338,8 +355,7 @@
       }
     });
 
-    /* ===== 抓號：fetch + JSONP 後備 ===== */
-    const FETCH_TIMEOUT = 1200; // 單次請求逾時（和上方同名，這裡再宣告一次以保清楚）
+    /* ===== 抓號：先用 fetch，失敗再 JSONP 後備 ===== */
     async function fetchJSON() {
       const ctrl = new AbortController();
       const t = setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
@@ -371,13 +387,12 @@
         if(current !== lastNumber){
           animateNumber(current);
           showPopup(`請 ${current} 號就診`);
-          // 無障礙同步：讓讀屏也聽得到
-          sayToSR(`目前看診號碼：${current}`);
+          sayToSR(`目前看診號碼：${current}`); // 讀屏即時提示
           if (Voice.enabled) speakNumber(n);
           lastNumber = current;
         }
       }catch(err){
-        // console.warn('抓號失敗：', err?.message || err);
+        // 可視需要打開除錯：console.warn('抓號失敗：', err?.message || err);
       }
     }
 
