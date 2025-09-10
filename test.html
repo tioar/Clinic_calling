@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
@@ -375,11 +375,12 @@
       const t = setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
       try{
         // 加上 ts 打破快取；no-cache 標頭避免中間代理快取
-        const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, {
-          cache:'no-store',
-          headers:{ 'pragma':'no-cache', 'cache-control':'no-cache' },
-          signal: ctrl.signal
-        });
+    const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, {
+      cache: 'no-store',
+        // 不要自訂 headers，保持「簡單請求」避免 preflight
+      signal: ctrl.signal
+    });
+
         clearTimeout(t);
         if(!res.ok) throw new Error(res.statusText);
         const data = await res.json();
