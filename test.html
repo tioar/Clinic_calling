@@ -222,9 +222,9 @@
 
       if (speechSynthesis.speaking || speechSynthesis.pending){
         speechSynthesis.cancel();
-        Voice.timer = setTimeout(()=> doSpeak(txt), 180); // 延遲一點點再播
+        Voice.timer = setTimeout(()=> doSpeak(txt), 200); // 延遲一點點再播
       } else {
-        Voice.timer = setTimeout(()=> doSpeak(txt), 80);  // 小暖機，避免被吃頭
+        Voice.timer = setTimeout(()=> doSpeak(txt), 180);  // 小暖機，避免被吃頭
       }
     }
 
