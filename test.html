@@ -212,154 +212,160 @@
 
     let lastNumber='000';
 
-    /* ==================== 語音播報核心 ==================== */
-    // 語速（0.1~10）：想更慢可改 0.7；想正常 1.0
-    const TTS_RATE = 0.75;
+<script>
+  /* ==================== 語音播報核心（Android/Windows 修正版） ==================== */
+  // 語速（0.1~10）：想更慢可改 0.7；想正常 1.0
+  const TTS_RATE = 0.75;
 
-    const Voice = { ready:false, unlocked:false, voices:[], zhVoice:null, enabled:false, timer:null };
+  const Voice = { ready:false, unlocked:false, voices:[], zhVoice:null, enabled:false, timer:null };
 
-    function loadVoices(){
-      const list = window.speechSynthesis?.getVoices?.() || [];
-      Voice.voices = list;
-      Voice.zhVoice =
-        list.find(v => v.lang?.toLowerCase().startsWith('zh-tw')) ||
-        list.find(v => v.lang?.toLowerCase().startsWith('zh-hk')) ||
-        list.find(v => v.lang?.toLowerCase().startsWith('zh-cn')) ||
-        list.find(v => v.lang?.toLowerCase().startsWith('zh'));
+  function loadVoices(){
+    const list = window.speechSynthesis?.getVoices?.() || [];
+    Voice.voices = list;
+    Voice.zhVoice =
+      list.find(v => v.lang?.toLowerCase().startsWith('zh-tw')) ||
+      list.find(v => v.lang?.toLowerCase().startsWith('zh-hk')) ||
+      list.find(v => v.lang?.toLowerCase().startsWith('zh-cn')) ||
+      list.find(v => v.lang?.toLowerCase().startsWith('zh'));
+  }
+
+  function unlockTTS(){
+    if(!('speechSynthesis' in window)){
+      alert('此瀏覽器不支援語音播報，請改用 Chrome / Safari / Edge。');
+      return false;
     }
-
-    function unlockTTS(){
-      if(!('speechSynthesis' in window)){
-        alert('此瀏覽器不支援語音播報，請改用 Chrome / Safari / Edge。');
-        return false;
-      }
-      loadVoices();
-      if(typeof speechSynthesis.onvoiceschanged !== 'undefined'){
-        speechSynthesis.onvoiceschanged = () => loadVoices();
-      }
-      try{ speechSynthesis.resume(); }catch(e){}
-      Voice.unlocked = true; Voice.ready = true;
-      return true;
+    loadVoices();
+    if(typeof speechSynthesis.onvoiceschanged !== 'undefined'){
+      speechSynthesis.onvoiceschanged = () => loadVoices();
     }
+    try{ speechSynthesis.resume(); }catch(e){}
+    Voice.unlocked = true; Voice.ready = true;
+    return true;
+  }
 
-    // ====== 具有「暖機」的播放入口，避免開頭被吃掉 ======
-    function speakText(txt){
-      if(!Voice.ready || !txt) return;
+  // ====== 具有「更穩暖機」的播放入口，避免 Windows/Chrome 開頭被吃掉 ======
+  function speakText(txt){
+    if(!Voice.ready || !txt) return;
 
-      // allow one-shot even if toggle off (由 replayBtn 觸發時會暫時開啟)
-      if (!Voice.enabled && !speakText._oneshot) return;
+    // allow one-shot even if toggle off（重播鈕可用）
+    if (!Voice.enabled && !speakText._oneshot) return;
 
-      if (Voice.timer){ clearTimeout(Voice.timer); Voice.timer = null; }
+    if (Voice.timer){ clearTimeout(Voice.timer); Voice.timer = null; }
 
-      const play = () => {
-        // 用 NBSP 暖機：大多數裝置不會出聲，只會極短促觸發 onend
-        const warm = new SpeechSynthesisUtterance('\u00A0');
-        warm.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
-        warm.rate = TTS_RATE; warm.pitch = 1; warm.volume = 0;
+    const play = () => {
+      // 1) 暖機 Utterance（NBSP，不出聲）
+      const warm = new SpeechSynthesisUtterance('\u00A0');
+      warm.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
+      warm.rate = TTS_RATE; warm.pitch = 1; warm.volume = 0;
 
-        const safety = setTimeout(() => {
-          try{ speechSynthesis.cancel(); }catch(e){}
-          reallySpeak(txt);
-        }, 750);
+      // 2) 保險：若 onend 沒回來，0.9 秒後強制播主句
+      const safety = setTimeout(() => {
+        try{ speechSynthesis.cancel(); }catch(e){}
+        reallySpeak(txt);
+      }, 900);
 
-        warm.onend = () => {
-          clearTimeout(safety);
-          setTimeout(() => reallySpeak(txt), 60);
-        };
-
-        try{ speechSynthesis.resume(); }catch(e){}
-        speechSynthesis.speak(warm);
+      warm.onend = () => {
+        clearTimeout(safety);
+        // 3) 再多等一下（Windows/Chrome 需要），再播主句
+        setTimeout(() => reallySpeak(txt), 120);
       };
 
-      if (speechSynthesis.speaking || speechSynthesis.pending){
-        try{ speechSynthesis.cancel(); }catch(e){}
-        Voice.timer = setTimeout(play, 220);
-      } else {
-        Voice.timer = setTimeout(play, 100);
-      }
+      try{ speechSynthesis.resume(); }catch(e){}
+      speechSynthesis.speak(warm);
+    };
+
+    // 若此時還在講話或佇列中，先取消 → 等久一點 → 再暖機
+    if (speechSynthesis.speaking || speechSynthesis.pending){
+      try{ speechSynthesis.cancel(); }catch(e){}
+      Voice.timer = setTimeout(play, 280);   // ← 原本 220，延長到 280ms
+    } else {
+      Voice.timer = setTimeout(play, 150);   // ← 原本 100–120，延長到 150ms
     }
+  }
 
-    function reallySpeak(txt){
-      const u = new SpeechSynthesisUtterance(txt);
-      if(!Voice.zhVoice || !Voice.voices.length) loadVoices();
-      if(Voice.zhVoice) u.voice = Voice.zhVoice;
-      u.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
-      u.rate = TTS_RATE;  u.pitch = 1;  u.volume = 1;
-      u.onstart = ()=>{ try{ speechSynthesis.resume(); }catch(e){} };
-      speechSynthesis.speak(u);
+  // 實際播報：前面加全形空白與逗號，避免第一音被吞；結尾用全形句號避免 Android 念 tilde
+  function reallySpeak(txt){
+    // 前綴加入「全形空白 + 逗號」讓引擎先穩住，再進主句；實際不會被念出
+    const safeText = '\u3000，' + String(txt).replace(/~+$/g,'。'); // 移除/替換句尾 ~ → 。
+    const u = new SpeechSynthesisUtterance(safeText);
+    if(!Voice.zhVoice || !Voice.voices.length) loadVoices();
+    if(Voice.zhVoice) u.voice = Voice.zhVoice;
+    u.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
+    u.rate = TTS_RATE;  u.pitch = 1;  u.volume = 1;
+    u.onstart = ()=>{ try{ speechSynthesis.resume(); }catch(e){} };
+    speechSynthesis.speak(u);
+  }
+
+  // 阿拉伯數字 → 國語常用讀法（0~999）
+  function zhRead(n){
+    n = Math.max(0, Math.min(999, Math.floor(n)));
+    const d = ['零','一','二','三','四','五','六','七','八','九'];
+    if (n === 0) return '零';
+    let out = '';
+    const h = Math.floor(n / 100);
+    const t = Math.floor((n % 100) / 10);
+    const u = n % 10;
+    if (h > 0){
+      out += d[h] + '百';
+      if (t === 0 && u > 0) out += '零';
     }
-
-    // 阿拉伯數字 → 國語常用讀法（0~999）
-    function zhRead(n){
-      n = Math.max(0, Math.min(999, Math.floor(n)));
-      const d = ['零','一','二','三','四','五','六','七','八','九'];
-      if (n === 0) return '零';
-
-      let out = '';
-      const h = Math.floor(n / 100);
-      const t = Math.floor((n % 100) / 10);
-      const u = n % 10;
-
-      if (h > 0){
-        out += d[h] + '百';
-        if (t === 0 && u > 0) out += '零';
-      }
-      if (t > 0){
-        if (t === 1 && h === 0) out += '十';
-        else out += d[t] + '十';
-      }
-      if (u > 0){
-        out += d[u];
-      }
-      return out;
+    if (t > 0){
+      if (t === 1 && h === 0) out += '十';
+      else out += d[t] + '十';
     }
-
-    // 叫號（一次發話內重複兩次）
-    function speakNumber(n){
-      const zh = zhRead(n);
-      const phrase = `第${zh}號、第${zh}號請進診間～`;
-      speakText(phrase);
+    if (u > 0){
+      out += d[u];
     }
+    return out;
+  }
 
-    // 語音開關
-    const voiceToggle = document.getElementById('voiceToggle');
-    voiceToggle.addEventListener('change', ()=>{
-      if(voiceToggle.checked){
-        if(!Voice.unlocked && !unlockTTS()){ voiceToggle.checked = false; return; }
-        Voice.enabled = true;
-        speakText._oneshot = true;  // 允許這句即使 toggle 剛打開也能播
-        speakText('語音叫號已開啟');
-        speakText._oneshot = false;
-      }else{
-        Voice.enabled = false;
-        speechSynthesis.cancel();
-      }
-    });
+  // 叫號（一次發話內重複兩次；句尾用「。」；不念「就診」）
+  function speakNumber(n){
+    const zh = zhRead(n);
+    const phrase = `第${zh}號、第${zh}號請進診間。`;  // ← 不用 ~，避免 Android 念成 「tilde」
+    speakText(phrase);
+  }
 
-    // ✅ 重播按鈕：即使開關關閉，也允許「單次」播放
-    document.getElementById('replayBtn').addEventListener('click', ()=>{
-      const n = parseInt(lastNumber, 10);
-      if (!Number.isFinite(n)) return;
-      if (!Voice.unlocked) unlockTTS();
-      const prev = Voice.enabled;
-      speakText._oneshot = true;   // 暫時允許播報
-      speakNumber(n);
+  // 語音開關（保留你原本的）
+  const voiceToggle = document.getElementById('voiceToggle');
+  voiceToggle.addEventListener('change', ()=>{
+    if(voiceToggle.checked){
+      if(!Voice.unlocked && !unlockTTS()){ voiceToggle.checked = false; return; }
+      Voice.enabled = true;
+      speakText._oneshot = true;
+      speakText('語音叫號已開啟。');
       speakText._oneshot = false;
-      Voice.enabled = prev;
-    });
+    }else{
+      Voice.enabled = false;
+      speechSynthesis.cancel();
+    }
+  });
 
-    // 首次觸控自動解鎖（行動裝置友善）
-    window.addEventListener('touchend', function once(){
-      if(!Voice.unlocked){ unlockTTS(); }
-      window.removeEventListener('touchend', once, true);
-    }, true);
+  // 重播按鈕（保留你原本的，確保即使關閉也能單次播）
+  document.getElementById('replayBtn')?.addEventListener('click', ()=>{
+    const n = parseInt(lastNumber, 10);
+    if (!Number.isFinite(n)) return;
+    if (!Voice.unlocked) unlockTTS();
+    const prev = Voice.enabled;
+    speakText._oneshot = true;
+    speakNumber(n);
+    speakText._oneshot = false;
+    Voice.enabled = prev;
+  });
 
-    document.addEventListener('visibilitychange', ()=>{
-      if(document.visibilityState === 'visible'){
-        try{ speechSynthesis.resume(); }catch(e){}
-      }
-    });
-    /* ================= 語音播報核心：結束 ================= */
+  // 首次觸控自動解鎖 & 視窗回前景 resume（保留）
+  window.addEventListener('touchend', function once(){
+    if(!Voice.unlocked){ unlockTTS(); }
+    window.removeEventListener('touchend', once, true);
+  }, true);
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible'){
+      try{ speechSynthesis.resume(); }catch(e){}
+    }
+  });
+  /* ================= 語音播報核心：結束 ================= */
+</script>
+
 
     /* 叫號＋旗標呈現 */
     async function fetchNumber(){
