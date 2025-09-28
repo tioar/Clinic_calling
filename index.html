@@ -17,11 +17,17 @@
 <meta property="og:url" content="https://tioar.github.io/Clinic_calling/">
 <meta property="og:locale" content="zh_TW">
 
+<!-- 本地楷體預載，避免 iOS/行動端延遲 -->
+<link rel="preload" href="./fonts/CwTeXKai.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/TW-Kai.woff2"  as="font" type="font/woff2" crossorigin>
+
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 中央大號碼專用：Lora（粗體） -->
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@700;800;900&display=swap" rel="stylesheet">
+<!-- Google Fonts：Cinzel（大號碼專用） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
 <style>
 /* ===== 內嵌自家楷體 ===== */
@@ -48,8 +54,8 @@
 
   /* 全站文字（含一般數字）用楷體 */
   --text-font:"CwTeXKai","TW-Kai","LXGW WenKai TC","DFKai-SB","KaiTi","BiauKai",serif;
-  /* 中央大號碼專用：Lora（楷體備援） */
-  --digit-font:"Lora","CwTeXKai","TW-Kai",serif;
+  /* 中央大號碼專用：Cinzel（楷體備援） */
+  --digit-font:"Cinzel","CwTeXKai","TW-Kai",serif;
 }
 
 /* ===== 基本排版 ===== */
@@ -70,7 +76,7 @@ body{
   border:1px solid var(--soft);
   padding:clamp(16px,4vw,32px);
   text-align:center;
-  /* 更明顯的陰影 */
+  /* 陰影更明顯 */
   box-shadow:
     0 10px 24px rgba(0,0,0,.08),
     0 2px 0 rgba(165,184,208,.35) inset;
@@ -120,7 +126,7 @@ body{
   font-synthesis:weight;
 }
 
-/* 中央大號碼：用 Lora 粗體，無底色、超大 */
+/* 中央大號碼：用 Cinzel 粗體，無底色、超大 */
 .big-wrap{ margin:10px 0 8px; }
 .number{
   font-family:var(--digit-font) !important;
@@ -177,7 +183,7 @@ body{
     <!-- 六邊形狀態 -->
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <!-- 中央號碼（Lora） -->
+    <!-- 中央號碼（Cinzel） -->
     <div class="big-wrap" aria-live="polite" aria-atomic="true">
       <div id="bigNumber" class="number">0</div>
     </div>
