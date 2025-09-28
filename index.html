@@ -17,14 +17,14 @@
 <meta property="og:url" content="https://tioar.github.io/Clinic_calling/">
 <meta property="og:locale" content="zh_TW">
 
-<!-- 本地楷體預載，避免 iOS/行動端延遲 -->
+<!-- 本地楷體預載 -->
 <link rel="preload" href="./fonts/CwTeXKai.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="./fonts/TW-Kai.woff2"  as="font" type="font/woff2" crossorigin>
 
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- Google Fonts：Cinzel（大號碼專用） -->
+<!-- 中央大號碼：Cinzel -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
@@ -76,7 +76,6 @@ body{
   border:1px solid var(--soft);
   padding:clamp(16px,4vw,32px);
   text-align:center;
-  /* 陰影更明顯 */
   box-shadow:
     0 10px 24px rgba(0,0,0,.08),
     0 2px 0 rgba(165,184,208,.35) inset;
@@ -115,18 +114,18 @@ body{
 .title-row h1{
   margin:10px 0 6px;
   color:#1f2f63;
-  font-weight:800;           /* 粗體 */
+  font-weight:800;
   font-size:clamp(32px,5vw,44px);
   letter-spacing:.06em;
 }
 .now-time{
   color:var(--classic);
   font-size:clamp(24px,5.2vw,34px);
-  font-weight:700;           /* iOS 仍用楷體的假粗體 */
+  font-weight:700;
   font-synthesis:weight;
 }
 
-/* 中央大號碼：用 Cinzel 粗體，無底色、超大 */
+/* 中央大號碼：Cinzel 粗體 */
 .big-wrap{ margin:10px 0 8px; }
 .number{
   font-family:var(--digit-font) !important;
@@ -153,6 +152,28 @@ body{
   font-size:clamp(16px,3.2vw,20px);
 }
 .note p{ margin:.4em 0; }
+
+/* ====== 只新增：彩條 + 門診表 ====== */
+/* 彩條：維持原本顏色比例（不動其他外觀） */
+.palette{
+  height:8px;
+  margin:8px auto 14px;
+  width:min(560px,90%);
+  background:linear-gradient(
+    to right,
+    #D8C0AD 0 22%,
+    #6db337 22% 45%,
+    #35579A 45% 82%,
+    #A5B8D0 82% 100%
+  );
+}
+/* 門診表：維持原本無邊框無陰影 */
+.schedule{
+  margin-top:6px;
+  max-width:100%;
+  border:none;
+  box-shadow:none;
+}
 
 /* SR only */
 .sr-only{
@@ -203,6 +224,10 @@ body{
       <p>♦︎ 雲端號碼僅供參考，實際叫號以現場為準。每位病患約 3–5 分鐘，請提前到場在可看到燈號的位置等候以免過號。</p>
       <p>♦︎ 若已過號請再次向櫃檯報到，將依現場狀況調整安排。門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)515-2971。</p>
     </div>
+
+    <!-- ✅ 只加回這兩個 -->
+    <div class="palette" aria-hidden="true"></div>
+    <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
   </div>
 
 <script>
@@ -218,7 +243,7 @@ body{
   marquee.addEventListener('pointercancel', run);
 })();
 
-/* 圖片備援 */
+/* 圖片備援：Logo + 門診表（只新增 schedule 的備援） */
 (function(){
   const logo = document.getElementById('clinicLogo');
   const logoFallbacks = [
@@ -227,9 +252,17 @@ body{
     'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo.png'
   ];
   let li=0; logo.onerror=function(){ if(li<logoFallbacks.length){ this.src=logoFallbacks[li++]; } else { this.style.display='none'; } };
+
+  const sch = document.getElementById('scheduleImg');
+  if (sch){
+    const schFallbacks = [
+      'https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'
+    ];
+    let si=0; sch.onerror=function(){ if(si<schFallbacks.length){ this.src=schFallbacks[si++]; } else { this.style.display='none'; } };
+  }
 })();
 
-/* ===== 語音設定 ===== */
+/* ===== 語音設定（原樣） ===== */
 const TTS_RATE = 0.55;
 const UA = navigator.userAgent.toLowerCase();
 const isWinChrome = UA.includes('windows') && UA.includes('chrome') && !UA.includes('edg');
@@ -328,7 +361,7 @@ document.addEventListener('visibilitychange', ()=>{
   }
 });
 
-/* ===== 抓號與顯示 ===== */
+/* ===== 抓號與顯示（原樣） ===== */
 const POLL_MS = 1500;
 const FETCH_TIMEOUT = 1200;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
@@ -384,7 +417,7 @@ async function fetchNumber(){
     const n = Number(data.number);
     if (!Number.isFinite(n) || n < 0 || n >= 10000) return;
 
-    const current = String(n);     // ← 不補 0
+    const current = String(n);     // 不補 0
     if(current !== lastNumber){
       setBigNumber(current);
       srStatus.textContent = `目前看診號碼：${current}`;
