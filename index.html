@@ -49,15 +49,13 @@
   unicode-range: U+0030-0039; /* 0–9 */
 }
 
-/* 讓全站 0–9 改用 Lora：只覆蓋數字的 face */
+/* 讓全站 0–9 改用 Lora：只覆蓋數字的 face（作為備援） */
 @font-face{
   font-family:"LoraDigits";
   font-style:normal;
   font-weight:400;
   font-display:swap;
-  /* 先嘗試使用已由上方 <link> 載入的 'Lora'，並提供一個常見的 woff2 後備來源 */
-  src: local("Lora"),
-       url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
+  src: url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
   unicode-range: U+0030-0039; /* 只覆蓋 0–9 */
 }
 
@@ -81,8 +79,8 @@
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{
-  /* 只在最前面加上 LoraDigits，其他完全不變 */
-  font-family:"LoraDigits", var(--text-font);
+  /* ★ 修正：把真正的 Lora 放在最前，iOS 會正確用於 0–9；中文不受影響 */
+  font-family:"Lora","LoraDigits", var(--text-font);
   -webkit-font-smoothing:antialiased;
   color:#1c1c1c;
   background:#fff;
@@ -145,13 +143,16 @@ body{
   font-synthesis:weight;
 }
 
-/* 中央大號碼（改用 LoraDigits，其他不動） */
+/* 中央大號碼 */
 .big-wrap{ margin:10px 0 8px; }
 .number{
-  font-family: "LoraDigits", var(--digit-font) !important;
+  /* ★ 修正：把 Lora 放最前，確保 iPhone 直接吃到 Lora 的數字 */
+  font-family: "Lora","LoraDigits", var(--digit-font) !important;
   color:#B91C1C;
-  font-weight:700;         /* 合成粗體，避免跳字型 */
+  font-weight:700;
   font-synthesis: weight;
+  /* 讓變數字重的 Lora 在 iOS 上確實套用粗度 */
+  font-variation-settings: "wght" 700;
   font-size:clamp(120px,20vw,260px);
   line-height:1;
   letter-spacing:.02em;
