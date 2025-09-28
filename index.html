@@ -27,7 +27,6 @@
 <!-- 中央大號碼：Cinzel -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&display=swap" rel="stylesheet">
 
 <style>
 /* ===== 內嵌自家楷體 ===== */
@@ -36,10 +35,14 @@
   src:url("./fonts/CwTeXKai.woff2") format("woff2");
   font-weight:400; font-style:normal; font-display:swap;
 }
+/* 強制 0–9 使用楷體（避免 iOS 因粗體權重而整段 fallback） */
 @font-face{
-  font-family:"TW-Kai";
-  src:url("./fonts/TW-Kai.woff2") format("woff2");
-  font-weight:400; font-style:normal; font-display:swap;
+  font-family:"KaiDigits";
+  src:url("./fonts/CwTeXKai.woff2") format("woff2");
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
+  unicode-range: U+0030-0039; /* 0–9 */
 }
 
 /* ===== 顏色/字型變數 ===== */
@@ -52,10 +55,10 @@
   --pill-coral:#F37163;
   --digit-red:#B91C1C;
 
-  /* 全站文字（含一般數字）用楷體 */
-  --text-font:"CwTeXKai","TW-Kai","LXGW WenKai TC","DFKai-SB","KaiTi","BiauKai",serif;
-  /* 中央大號碼專用：Cinzel（楷體備援） */
-  --digit-font:"Cinzel","CwTeXKai","TW-Kai",serif;
+  /* 全站楷體（含備援） */
+  --text-font: "CwTeXKai","TW-Kai","DFKai-SB","BiauKai","KaiTi","LXGW WenKai TC",serif;
+  /* 大號碼 = 跟全站一樣的楷體 */
+  --digit-font: var(--text-font);
 }
 
 /* ===== 基本排版 ===== */
@@ -128,9 +131,10 @@ body{
 /* 中央大號碼：Cinzel 粗體 */
 .big-wrap{ margin:10px 0 8px; }
 .number{
-  font-family:var(--digit-font) !important;
-  color:var(--digit-red);
-  font-weight:900;
+  font-family: "KaiDigits", var(--digit-font) !important;
+  color:#B91C1C;
+  font-weight:700;         /* 700 讓瀏覽器做合成粗體，不會整段 fallback */
+  font-synthesis: weight;  /* 確保 iOS 也合成粗體 */
   font-size:clamp(120px,20vw,260px);
   line-height:1;
   letter-spacing:.02em;
