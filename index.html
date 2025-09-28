@@ -24,6 +24,11 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
+<!-- 只為數字用的 Lora 字體（其餘不變） -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 /* ===== 內嵌本地楷體 ===== */
 @font-face{
@@ -42,6 +47,18 @@
   src:url("./fonts/CwTeXKai.woff2") format("woff2");
   font-weight:400; font-style:normal; font-display:swap;
   unicode-range: U+0030-0039; /* 0–9 */
+}
+
+/* 讓全站 0–9 改用 Lora：只覆蓋數字的 face */
+@font-face{
+  font-family:"LoraDigits";
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  /* 先嘗試使用已由上方 <link> 載入的 'Lora'，並提供一個常見的 woff2 後備來源 */
+  src: local("Lora"),
+       url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
+  unicode-range: U+0030-0039; /* 只覆蓋 0–9 */
 }
 
 /* ===== 顏色/字型變數 ===== */
@@ -64,7 +81,8 @@
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{
-  font-family:var(--text-font);
+  /* 只在最前面加上 LoraDigits，其他完全不變 */
+  font-family:"LoraDigits", var(--text-font);
   -webkit-font-smoothing:antialiased;
   color:#1c1c1c;
   background:#fff;
@@ -127,10 +145,10 @@ body{
   font-synthesis:weight;
 }
 
-/* 中央大號碼（楷體） */
+/* 中央大號碼（改用 LoraDigits，其他不動） */
 .big-wrap{ margin:10px 0 8px; }
 .number{
-  font-family: "KaiDigits", var(--digit-font) !important;
+  font-family: "LoraDigits", var(--digit-font) !important;
   color:#B91C1C;
   font-weight:700;         /* 合成粗體，避免跳字型 */
   font-synthesis: weight;
