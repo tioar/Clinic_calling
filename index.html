@@ -20,138 +20,156 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
+<!-- 主要毛筆楷體（Google 免費，iOS/Android/桌機都可用） -->
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-/* ===== 本地楷體 ===== */
-@font-face{
-  font-family:"TW-Kai";
-  src:url("./fonts/TW-Kai.woff2") format("woff2");
-  font-weight:400; font-style:normal; font-display:swap;
-}
-@font-face{
-  font-family:"CwTeXKai";
-  src:url("./fonts/CwTeXKai.woff2") format("woff2");
-  font-weight:400; font-style:normal; font-display:swap;
-}
-/* ✅ 只給數字用的楷體（強制 iPhone 也吃楷體 0–9） */
-@font-face{
-  font-family:"KaiDigits";
-  src:url("./fonts/TW-Kai.woff2") format("woff2");
-  font-weight:400; font-style:normal; font-display:swap;
-  unicode-range: U+0030-0039; /* 0-9 */
-}
+  /* ============ 本地字型（你上傳的檔） ============ */
+  @font-face{
+    font-family:"TW-Kai";
+    src:url("./fonts/TW-Kai.woff2") format("woff2");
+    font-weight:400; font-style:normal; font-display:swap;
+  }
+  @font-face{
+    font-family:"CwTeXKai";
+    src:url("./fonts/CwTeXKai.woff2") format("woff2");
+    font-weight:400; font-style:normal; font-display:swap;
+  }
 
-:root{
-  --primary:#35579A;
-  --soft:#A5B8D0;
-  --light:#EAF1FF;
-  --beige:#D8C0AD;
-  --digit-red:#B91C1C;
-  --pill-red:#E53935;
-  --pill-coral:#F37163;
+  :root{
+    --primary:#35579A;      /* Classic Blue */
+    --soft:#A5B8D0;         /* 藍系細線 */
+    --light:#EAF1FF;        /* 很淺藍（需要時可用） */
+    --beige:#D8C0AD;        /* 卡其（核取） */
+    --digit-red:#B91C1C;    /* 號碼紅 */
+    --pill-red:#E53935;     /* 休診 */
+    --pill-coral:#F37163;   /* 停止掛號 */
+    --marquee:#658DC6;      /* 跑馬燈底色（你指定） */
 
-  --text-font: "TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai",
-               "LXGW WenKai TC","DFKai-SB","Microsoft JhengHei",serif;
-  /* 大號碼改用 KaiDigits 優先，確保 iPhone 是楷體 */
-  --digit-font: "KaiDigits","TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai",
-                "LXGW WenKai TC",serif;
-}
+    /* ✅ 全站毛筆楷體優先，備援是你上傳的標楷體 */
+    --text-font: "LXGW WenKai TC","TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai","Microsoft JhengHei",serif;
+    --digit-font: "LXGW WenKai TC","TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai",serif;
+  }
 
-*{box-sizing:border-box}
-body{
-  font-family:var(--text-font);
-  -webkit-font-smoothing:antialiased;
-  background:#fff; margin:0;
-  padding:clamp(16px,4vw,40px);
-  display:flex; justify-content:center; color:#1c1c1c;
-}
-/* 最大卡片：細邊＋雙層陰影 */
-.container{
-  width:min(920px,96vw); background:#fff;
-  border:1.5px solid var(--soft);
-  padding:clamp(16px,4vw,32px);
-  text-align:center;
-  box-shadow:
-    0 18px 40px rgba(53,87,154,.16),
-    0 2px 6px rgba(17,24,39,.08);
-}
+  *{ box-sizing:border-box; }
+  /* ✅ 全站字體加大 + 毛筆粗體 */
+  body{
+    font-family:var(--text-font);
+    font-weight:700;                  /* 粗體風格 */
+    -webkit-font-smoothing:antialiased;
+    background:#fff;
+    margin:0;
+    padding:clamp(16px,4vw,40px);
+    display:flex; justify-content:center; color:#1c1c1c;
+    font-size:18px;                   /* 全站加大（跑馬燈另外指定不受影響） */
+  }
 
-/* 跑馬燈：#658DC6 白字，字級與注意事項一致 */
-.marquee{
-  --gap:2rem; --speed:45s;
-  background:#658DC6; color:#fff;
-  padding:10px 0; margin:0 auto 14px;
-  overflow:hidden; white-space:nowrap; user-select:none;
-  font-size:clamp(14px,2vw,16px); font-weight:700;
-}
-.marquee__track{display:inline-flex; align-items:center; width:max-content; animation:marquee-loop var(--speed) linear infinite;}
-.marquee__track > span{padding-right:var(--gap)}
-.marquee:hover .marquee__track{animation-play-state:paused}
-@keyframes marquee-loop{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .container{
+    position:relative;
+    width:min(980px,96vw);
+    background:#fff;
+    border:1px solid #dfe6f4;
+    padding:clamp(18px,4.5vw,36px);
+    text-align:center;
+    /* ✅ 陰影（柔一點、兩層更自然） */
+    box-shadow:
+      0 14px 28px rgba(53,87,154,.12),
+      0 6px  12px rgba(53,87,154,.10);
+  }
 
-.logo{height:clamp(120px,22vw,200px); max-width:82vw; object-fit:contain; display:block; margin:10px auto 6px}
+  /* ============ 跑馬燈（不受全站放大影響） ============ */
+  .marquee{
+    --gap: 2rem; --speed: 45s;
+    background:var(--marquee); color:#fff;
+    padding:10px 0; margin:0 auto 16px;
+    overflow:hidden; white-space:nowrap; user-select:none;
+    font-size:clamp(13px,2vw,16px);   /* ✅ 固定較小，不被全站放大牽動 */
+    font-weight:700;
+    border-radius:0;
+  }
+  .marquee__track{ display:inline-flex; align-items:center; width:max-content; animation:marquee-loop var(--speed) linear infinite; }
+  .marquee__track > span{ padding-right:var(--gap); flex-shrink:0; }
+  .marquee:hover .marquee__track{ animation-play-state:paused; }
+  @keyframes marquee-loop{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
-/* 標題更大 */
-.title-row h1{
-  margin:0; color:#1f2f63;
-  font-size:clamp(32px,5vw,48px); font-weight:800; letter-spacing:.7px;
-}
+  .logo-wrap{ margin:6px 0 10px; }
+  .logo{
+    height:clamp(120px,22vw,200px);
+    max-width:82vw; object-fit:contain;
+    background:transparent; border:none; box-shadow:none; display:block; margin:0 auto;
+  }
 
-/* ✅ 目前年月日時間 放大 */
-.now-time{
-  color:#35579A; font-weight:800; margin-bottom:8px;
-  font-size:clamp(16px,3.6vw,22px);
-}
+  /* ============ 標題 / 時間 ============ */
+  .title-row{ display:flex; align-items:center; justify-content:center; gap:12px; margin:12px 0 6px; flex-wrap:wrap; }
+  .title-row h1{
+    margin:0; color:#1f2f63;
+    font-size:clamp(40px,6vw,60px);   /* ✅ 比之前更大 */
+    font-weight:900;                  /* ✅ 粗體 */
+    letter-spacing:.6px;
+  }
+  .now-time{
+    color:#35579A;
+    font-weight:800;
+    font-size:clamp(20px,3.6vw,26px); /* ✅ 加大 */
+    margin:2px 0 10px;
+  }
 
-/* 六邊形標籤（長條）＋字體放大 */
-.pill-wrap{display:flex; justify-content:center; margin:8px 0 12px}
-.hex{
-  --cut:18px;
-  display:inline-block; padding:.6rem 1.6rem;
-  color:#fff; font-weight:800; letter-spacing:.6px;
-  clip-path:polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%);
-  box-shadow:0 6px 16px rgba(0,0,0,.12);
-  font-size:clamp(14px,3.6vw,20px);   /* ✅ 放大 */
-}
-.hex.red{background:var(--pill-red)}
-.hex.coral{background:var(--pill-coral)}
+  /* ============ 狀態六邊形（放在標題/時間下面） ============ */
+  .pill-wrap{ display:flex; justify-content:center; margin:8px 0 12px; min-height:0; }
+  .hex{
+    display:inline-block; padding:.62rem 1.5rem;
+    color:#fff; font-weight:900; letter-spacing:.5px;
+    clip-path:polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+    box-shadow:0 6px 16px rgba(0,0,0,.10);
+    font-size:clamp(16px,3.5vw,22px); /* ✅ 加大 */
+  }
+  .hex.red{   background:var(--pill-red);}
+  .hex.coral{ background:var(--pill-coral);}
 
-/* 叫號：無底色、楷體、更大、不補零 */
-.number-box{display:inline-block; margin:4px auto 12px}
-.number{
-  font-family:var(--digit-font);
-  font-size:clamp(120px,20vw,260px); /* ✅ 已很大 */
-  line-height:1; color:var(--digit-red);
-  letter-spacing:.02em; font-weight:700;
-}
-@keyframes pop{0%{transform:scale(.96);opacity:.85}100%{transform:scale(1);opacity:1}}
-.pop{animation:pop .28s ease-out}
+  /* ============ 大號碼（無底色、不補 0、毛筆粗體） ============ */
+  .number{
+    font-family:var(--digit-font);
+    font-size:clamp(140px,22vw,320px); /* ✅ 再更大 */
+    line-height:1; color:var(--digit-red);
+    letter-spacing:.015em;
+    font-weight:900;                    /* ✅ 粗體 */
+    margin:.1em 0 .2em 0;
+  }
+  @keyframes pop { 0%{ transform:scale(.96); opacity:.85 } 100%{ transform:scale(1); opacity:1 } }
+  .pop{ animation:pop .25s ease-out }
 
-/* 語音核取方塊 + 🔔/🔕 */
-.voice-row{display:flex; align-items:center; justify-content:center; gap:12px; margin:8px 0 16px}
-.voice-label{font-weight:900; color:#3b2e1e; letter-spacing:.5px; font-size:clamp(16px,3vw,20px)}
-.chk{width:22px; height:22px; margin:0; accent-color:var(--beige); appearance:auto; cursor:pointer}
-.bell{font-size:22px; line-height:1}
+  /* ============ 語音核取 + 鈴鐺 ============ */
+  .voice-row{
+    display:flex; align-items:center; justify-content:center;
+    gap:12px; margin:10px 0 18px; flex-wrap:nowrap;
+    font-size:1.05rem;                 /* ✅ 加大 */
+  }
+  .voice-label{ font-weight:900; color:#3b2e1e; letter-spacing:.5px; }
+  .chk{ width:22px; height:22px; margin:0; accent-color:var(--beige); appearance:auto; cursor:pointer; }
+  .bell{ font-size:24px; line-height:1; }
 
-/* ✅ 注意事項整段放大（含行高） */
-.note{
-  background:#F2F6FB; padding:18px 22px; border:none;
-  margin:14px auto 12px; color:#274a6b; font-weight:700;
-  width:min(760px,100%); text-align:center;
-  font-size:clamp(14px,3.2vw,18px); line-height:1.75;
-}
-.note p{margin:.35em 0}
+  /* ============ 注意事項 ============ */
+  .note{
+    background:#F2F6FB; padding:18px 22px; border:none; border-radius:0; margin:14px auto 12px; color:#274a6b;
+    font-weight:800; width:min(860px,100%); text-align:center; font-size:1.06rem; /* ✅ 加大 */
+  }
+  .note p{ margin:.45em 0; }
 
-.palette{height:8px; margin:8px auto 14px; width:min(560px,90%); background:linear-gradient(to right,#D8C0AD 0 22%,#6db337 22% 45%,#35579A 45% 82%,#A5B8D0 82% 100%)}
-.schedule{margin-top:6px; max-width:100%; border:none; box-shadow:none}
+  .palette{ height:8px; margin:10px auto 12px; width:min(560px,90%); background:linear-gradient(to right,#D8C0AD 0 22%,#6db337 22% 45%,#35579A 45% 82%,#A5B8D0 82% 100%); }
+  .schedule{ margin-top:6px; max-width:100%; border:none; box-shadow:none; }
 
-/* 螢幕閱讀器用 */
-.sr-only{position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; white-space:nowrap}
+  /* 只給讀屏的提示區域 */
+  .sr-only{
+    position:absolute !important; width:1px; height:1px;
+    padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
+    border:0; white-space:nowrap;
+  }
 </style>
 </head>
 
 <body>
   <div class="container">
-    <!-- 跑馬燈 -->
+    <!-- 跑馬燈（白字、#658DC6） -->
     <div class="marquee" aria-label="診所訊息跑馬燈">
       <div class="marquee__track" id="marqueeTrack">
         <span>✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（最晚報到10:30）；☁︎ 午診 14:00–17:00（最晚報到16:00）；☾ 晚診 18:00–20:30（最晚報到20:00）。逾時視同放棄，名額將釋出給現場掛號。</span>
@@ -159,18 +177,20 @@ body{
       </div>
     </div>
 
-    <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
+    <div class="logo-wrap">
+      <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
+    </div>
 
     <div class="title-row"><h1 id="sectionTitle">目前看診號碼</h1></div>
     <div class="now-time" id="twTime">—</div>
 
-    <!-- 六邊形標籤 -->
+    <!-- 六邊形狀態（放在標題/時間下面） -->
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <!-- 叫號（無底色、不補0） -->
-    <div class="number-box"><div id="bigNumber" class="number">—</div></div>
+    <!-- 大號碼（無底色、不補 0） -->
+    <div id="bigNumber" class="number">0</div>
 
-    <!-- 語音開關 -->
+    <!-- 語音：核取 + 🔔/🔕 -->
     <div class="voice-row">
       <label class="voice-label" for="voiceToggle">開啟語音叫號提醒</label>
       <input type="checkbox" id="voiceToggle" class="chk" aria-checked="false" aria-labelledby="voiceToggle"/>
@@ -178,6 +198,7 @@ body{
       <div id="voiceHint" class="sr-only">勾選後，號碼變更時會自動語音播報。</div>
     </div>
 
+    <!-- 給讀屏的即時狀態提示 -->
     <div id="srStatus" class="sr-only" aria-live="polite"></div>
 
     <div class="note">
@@ -190,191 +211,235 @@ body{
   </div>
 
 <script>
-/* 跑馬燈暫停/恢復 */
-(function(){
-  const marquee=document.querySelector('.marquee');
-  const track=document.getElementById('marqueeTrack');
-  const pause=()=>track.style.animationPlayState='paused';
-  const run=()=>track.style.animationPlayState='running';
-  marquee.addEventListener('pointerdown',pause);
-  marquee.addEventListener('pointerup',run);
-  marquee.addEventListener('pointerleave',run);
-  marquee.addEventListener('pointercancel',run);
-})();
+  /* 跑馬燈暫停/恢復 */
+  (function(){
+    const marquee = document.querySelector('.marquee');
+    const track = document.getElementById('marqueeTrack');
+    const pause = () => track.style.animationPlayState = 'paused';
+    const run   = () => track.style.animationPlayState = 'running';
+    marquee.addEventListener('pointerdown', pause);
+    marquee.addEventListener('pointerup', run);
+    marquee.addEventListener('pointerleave', run);
+    marquee.addEventListener('pointercancel', run);
+  })();
 
-/* 圖片備援 */
-(function(){
-  const logo=document.getElementById('clinicLogo');
-  const logoFallbacks=['./logo.png',
-    'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo1.jpg',
-    'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo.png'];
-  let li=0; logo.onerror=function(){ if(li<logoFallbacks.length){ this.src=logoFallbacks[li++]; } else { this.style.display='none'; } };
+  /* 圖片備援 */
+  (function(){
+    const logo = document.getElementById('clinicLogo');
+    const logoFallbacks = [
+      './logo.png',
+      'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo1.jpg',
+      'https://raw.githubusercontent.com/tioar/Clinic_calling/main/logo.png'
+    ];
+    let li=0; logo.onerror = function(){ if(li<logoFallbacks.length){ this.src=logoFallbacks[li++]; } else { this.style.display='none'; } };
 
-  const sch=document.getElementById('scheduleImg');
-  const schFallbacks=['https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'];
-  let si=0; sch.onerror=function(){ if(si<schFallbacks.length){ this.src=schFallbacks[si++]; } else { this.style.display='none'; } };
-})();
+    const sch = document.getElementById('scheduleImg');
+    const schFallbacks = ['https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'];
+    let si=0; sch.onerror = function(){ if(si<schFallbacks.length){ this.src=schFallbacks[si++]; } else { this.style.display='none'; } };
+  })();
 
-let lastNumber=''; /* 不預設 000 */
+  let lastNumber = '-1';
 
-/* 抓號設定 */
-const POLL_MS=1500;
-const FETCH_TIMEOUT=1200;
-const GAS_URL="https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
+  /* 抓號設定 */
+  const POLL_MS = 1500;
+  const FETCH_TIMEOUT = 1200;
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
 
-/* ===== 語音設定 ===== */
-const TTS_RATE=0.55;
-const UA=navigator.userAgent.toLowerCase();
-const isWinChrome=UA.includes('windows')&&UA.includes('chrome')&&!UA.includes('edg');
-const WARM_CANCEL_DELAY=isWinChrome?220:120;
-const WARM_PLAY_DELAY=isWinChrome?100:60;
-const WARM_SAFETY_MS=isWinChrome?800:650;
+  /* ===== 語音設定 ===== */
+  const TTS_RATE = 0.55;
+  const UA = navigator.userAgent.toLowerCase();
+  const isWinChrome = UA.includes('windows') && UA.includes('chrome') && !UA.includes('edg');
+  const WARM_CANCEL_DELAY = isWinChrome ? 220 : 120;
+  const WARM_PLAY_DELAY   = isWinChrome ? 100 : 60;
+  const WARM_SAFETY_MS    = isWinChrome ? 800 : 650;
 
-const Voice={ready:false, unlocked:false, voices:[], zhVoice:null, enabled:false, timer:null};
-function loadVoices(){
-  const list=window.speechSynthesis?.getVoices?.()||[];
-  Voice.voices=list;
-  Voice.zhVoice=
-    list.find(v=>v.lang?.toLowerCase().startsWith('zh-tw'))||
-    list.find(v=>v.lang?.toLowerCase().startsWith('zh-hk'))||
-    list.find(v=>v.lang?.toLowerCase().startsWith('zh-cn'))||
-    list.find(v=>v.lang?.toLowerCase().startsWith('zh'));
-}
-function unlockTTS(){
-  if(!('speechSynthesis' in window)){ alert('此瀏覽器不支援語音播報'); return false; }
-  loadVoices();
-  if(typeof speechSynthesis.onvoiceschanged!=='undefined'){ speechSynthesis.onvoiceschanged=()=>loadVoices(); }
-  try{ speechSynthesis.resume(); }catch(e){}
-  Voice.unlocked=true; Voice.ready=true; return true;
-}
-function speakText(txt){
-  if(!Voice.ready||!txt) return;
-  if(!Voice.enabled && !speakText._oneshot) return;
-  const play=()=>{
-    const warm=new SpeechSynthesisUtterance('\u00A0');
-    warm.lang=(Voice.zhVoice&&Voice.zhVoice.lang)||'zh-TW';
-    warm.rate=TTS_RATE; warm.pitch=1; warm.volume=0;
-    const safety=setTimeout(()=>{ try{ speechSynthesis.cancel(); }catch(e){} reallySpeak(txt); }, isWinChrome?800:650);
-    warm.onend=()=>{ clearTimeout(safety); setTimeout(()=>reallySpeak(txt), isWinChrome?100:60); };
-    try{ speechSynthesis.resume(); }catch(e){}
-    speechSynthesis.speak(warm);
-  };
-  if(speechSynthesis.speaking||speechSynthesis.pending){
-    try{ speechSynthesis.cancel(); }catch(e){}
-    setTimeout(play, isWinChrome?220:120);
-  }else{
-    setTimeout(play, isWinChrome?100:60);
+  const Voice = { ready:false, unlocked:false, voices:[], zhVoice:null, enabled:false, timer:null };
+  function loadVoices(){
+    const list = window.speechSynthesis?.getVoices?.() || [];
+    Voice.voices = list;
+    Voice.zhVoice =
+      list.find(v => v.lang?.toLowerCase().startsWith('zh-tw')) ||
+      list.find(v => v.lang?.toLowerCase().startsWith('zh-hk')) ||
+      list.find(v => v.lang?.toLowerCase().startsWith('zh-cn')) ||
+      list.find(v => v.lang?.toLowerCase().startsWith('zh'));
   }
-}
-function reallySpeak(txt){
-  const u=new SpeechSynthesisUtterance((UA.includes('windows')?'\u3000，':'')+String(txt).replace(/[~～]+$/g,'。'));
-  if(!Voice.zhVoice||!Voice.voices.length) loadVoices();
-  if(Voice.zhVoice) u.voice=Voice.zhVoice;
-  u.lang=(Voice.zhVoice&&Voice.zhVoice.lang)||'zh-TW';
-  u.rate=TTS_RATE; u.pitch=1; u.volume=1;
-  u.onstart=()=>{ try{ speechSynthesis.resume(); }catch(e){} };
-  speechSynthesis.speak(u);
-}
-function zhRead(n){
-  n=Math.max(0,Math.min(999,Math.floor(n)));
-  const d=['零','一','二','三','四','五','六','七','八','九'];
-  if(n===0) return '零';
-  let out='',h=Math.floor(n/100),t=Math.floor((n%100)/10),u=n%10;
-  if(h>0){ out+=d[h]+'百'; if(t===0 && u>0) out+='零'; }
-  if(t>0){ out+=(t===1 && h===0?'':d[t])+'十'; }
-  if(u>0){ out+=d[u]; }
-  return out;
-}
-function speakNumber(n){ speakText(`${zhRead(n)}號、${zhRead(n)}號請進診間。`); }
-
-/* SR */
-const srStatus=document.getElementById('srStatus');
-function sayToSR(text){ srStatus.textContent=text; }
-
-/* 語音核取方塊 */
-const voiceToggle=document.getElementById('voiceToggle');
-const bell=document.getElementById('bell');
-voiceToggle.addEventListener('change',()=>{
-  voiceToggle.setAttribute('aria-checked', voiceToggle.checked?'true':'false');
-  bell.textContent=voiceToggle.checked?'🔔':'🔕';
-  if(voiceToggle.checked){
-    if(!Voice.unlocked && !unlockTTS()){ voiceToggle.checked=false; voiceToggle.setAttribute('aria-checked','false'); bell.textContent='🔕'; return; }
-    Voice.enabled=true;
-    speakText._oneshot=true; speakText('已開啟語音叫號提醒。'); speakText._oneshot=false;
-    sayToSR('已開啟語音叫號提醒');
-  }else{
-    Voice.enabled=false; try{ speechSynthesis.cancel(); }catch(e){}
-    sayToSR('已關閉語音叫號提醒');
-  }
-});
-window.addEventListener('touchend',function once(){ if(!Voice.unlocked){ unlockTTS(); } window.removeEventListener('touchend',once,true); },true);
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ try{ speechSynthesis.resume(); }catch(e){} }});
-
-/* 抓號（不補 0） */
-async function fetchJSON(){
-  const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(), 1200);
-  const res=await fetch(`${"https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec"}?ts=${Date.now()}`,{cache:'no-store', signal:ctrl.signal});
-  clearTimeout(t);
-  if(!res.ok) throw new Error(res.statusText);
-  return res.json();
-}
-function fetchJSONP(){
-  return new Promise((resolve,reject)=>{
-    const cb='onClinic_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
-    const s=document.createElement('script');
-    const done=()=>{ delete window[cb]; s.remove(); };
-    const to=setTimeout(()=>{ done(); reject(new Error('jsonp timeout')); },5000);
-    window[cb]=(d)=>{ clearTimeout(to); done(); resolve(d); };
-    s.src=`https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec?callback=${cb}&ts=${Date.now()}`;
-    s.onerror=()=>{ clearTimeout(to); done(); reject(new Error('jsonp error')); };
-    document.head.appendChild(s);
-  });
-}
-
-function renderStatusPill(data){
-  const box=document.getElementById('statusPill');
-  box.innerHTML='';
-  if(data.holiday===true){
-    const el=document.createElement('div'); el.className='hex red'; el.textContent='現在時間沒有門診，休診中'; box.appendChild(el);
-  }else if(data.closed===true){
-    const el=document.createElement('div'); el.className='hex coral'; el.textContent='當前時段已停止掛號'; box.appendChild(el);
-  }
-}
-function animateNumberText(text){
-  const el=document.getElementById('bigNumber');
-  el.textContent=text;
-  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-}
-async function fetchNumber(){
-  try{
-    const data=await fetchJSON().catch(async()=>await fetchJSONP());
-    renderStatusPill(data);
-    const n=Number(data.number);
-    if(!Number.isFinite(n)||n<0||n>=1000) return;
-    const current=String(n); // 不補 0
-    if(current!==lastNumber){
-      animateNumberText(current);
-      sayToSR(`目前看診號碼：${current}`);
-      if(Voice.enabled) speakNumber(n);
-      lastNumber=current;
+  function unlockTTS(){
+    if(!('speechSynthesis' in window)){ alert('此瀏覽器不支援語音播報'); return false; }
+    loadVoices();
+    if(typeof speechSynthesis.onvoiceschanged !== 'undefined'){
+      speechSynthesis.onvoiceschanged = () => loadVoices();
     }
-  }catch(e){}
-}
+    try{ speechSynthesis.resume(); }catch(e){}
+    Voice.unlocked = true; Voice.ready = true; return true;
+  }
+  function speakText(txt){
+    if(!Voice.ready || !txt) return;
+    if (!Voice.enabled && !speakText._oneshot) return;
+    if (Voice.timer){ clearTimeout(Voice.timer); Voice.timer = null; }
+    const play = () => {
+      const warm = new SpeechSynthesisUtterance('\u00A0'); // 無聲暖機
+      warm.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
+      warm.rate = TTS_RATE; warm.pitch = 1; warm.volume = 0;
 
-/* 時間 */
-const pad2=n=>String(n).padStart(2,'0');
-function updateTWTime(){
-  const el=document.getElementById('twTime');
-  const now=new Date();
-  const tw=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Taipei'}));
-  const w=['日','一','二','三','四','五','六'];
-  el.textContent=`${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())} (${w[tw.getDay()]}) ${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
-}
+      const safety = setTimeout(() => {
+        try{ speechSynthesis.cancel(); }catch(e){}
+        reallySpeak(txt);
+      }, WARM_SAFETY_MS);
 
-/* 啟動 */
-fetchNumber(); setInterval(fetchNumber, 1500);
-updateTWTime(); setInterval(updateTWTime, 1000);
+      warm.onend = () => {
+        clearTimeout(safety);
+        setTimeout(() => reallySpeak(txt), WARM_PLAY_DELAY);
+      };
+
+      try{ speechSynthesis.resume(); }catch(e){}
+      speechSynthesis.speak(warm);
+    };
+
+    if (speechSynthesis.speaking || speechSynthesis.pending){
+      try{ speechSynthesis.cancel(); }catch(e){}
+      setTimeout(play, WARM_CANCEL_DELAY);
+    } else {
+      setTimeout(play, WARM_PLAY_DELAY);
+    }
+  }
+  function reallySpeak(txt){
+    const safeTail = String(txt).replace(/[~～]+$/g,'。');
+    const prefix = isWinChrome ? '\u3000，' : '';
+    const u = new SpeechSynthesisUtterance(prefix + safeTail);
+    if(!Voice.zhVoice || !Voice.voices.length) loadVoices();
+    if(Voice.zhVoice) u.voice = Voice.zhVoice;
+    u.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
+    u.rate = TTS_RATE;  u.pitch = 1;  u.volume = 1;
+    u.onstart = ()=>{ try{ speechSynthesis.resume(); }catch(e){} };
+    speechSynthesis.speak(u);
+  }
+  function zhRead(n){
+    n = Math.max(0, Math.min(999, Math.floor(n)));
+    const d = ['零','一','二','三','四','五','六','七','八','九'];
+    if (n === 0) return '零';
+    let out = '', h = Math.floor(n/100), t = Math.floor((n%100)/10), u = n%10;
+    if(h>0){ out += d[h]+'百'; if(t===0 && u>0) out+='零'; }
+    if(t>0){ out += (t===1 && h===0 ? '' : d[t]) + '十'; }
+    if(u>0){ out += d[u]; }
+    return out;
+  }
+  function speakNumber(n){
+    const zh = zhRead(n);
+    speakText(`${zh}號、${zh}號請進診間。`);
+  }
+
+  // 無障礙讀屏提示
+  const srStatus = document.getElementById('srStatus');
+  function sayToSR(text){ srStatus.textContent = text; }
+
+  // 語音核取方塊
+  const voiceToggle = document.getElementById('voiceToggle');
+  const bell = document.getElementById('bell');
+  voiceToggle.addEventListener('change', ()=>{
+    voiceToggle.setAttribute('aria-checked', voiceToggle.checked ? 'true' : 'false');
+    bell.textContent = voiceToggle.checked ? '🔔' : '🔕';
+    if(voiceToggle.checked){
+      if(!Voice.unlocked && !unlockTTS()){ voiceToggle.checked=false; voiceToggle.setAttribute('aria-checked','false'); bell.textContent='🔕'; return; }
+      Voice.enabled = true;
+      speakText._oneshot = true;
+      speakText('已開啟語音叫號提醒。');
+      speakText._oneshot = false;
+      sayToSR('已開啟語音叫號提醒');
+    }else{
+      Voice.enabled = false;
+      try{ speechSynthesis.cancel(); }catch(e){}
+      sayToSR('已關閉語音叫號提醒');
+    }
+  });
+  window.addEventListener('touchend', function once(){
+    if(!Voice.unlocked){ unlockTTS(); }
+    window.removeEventListener('touchend', once, true);
+  }, true);
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible'){
+      try{ speechSynthesis.resume(); }catch(e){}
+    }
+  });
+
+  /* ===== 抓號：先 fetch，失敗再 JSONP ===== */
+  async function fetchJSON() {
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
+    const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, { cache:'no-store', signal: ctrl.signal });
+    clearTimeout(t);
+    if(!res.ok) throw new Error(res.statusText);
+    return res.json();
+  }
+  function fetchJSONP() {
+    return new Promise((resolve, reject) => {
+      const cbName = 'onClinicData_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
+      const s = document.createElement('script');
+      const timeout = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 5000);
+      window[cbName] = (data) => { cleanup(); resolve(data); };
+      function cleanup(){ clearTimeout(timeout); delete window[cbName]; s.remove(); }
+      s.src = `${GAS_URL}?callback=${cbName}&ts=${Date.now()}`;
+      s.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function renderStatusPill(data){
+    const box = document.getElementById('statusPill');
+    box.innerHTML = '';
+    if (data.holiday === true){
+      const el = document.createElement('div');
+      el.className = 'hex red';
+      el.textContent = '現在時間沒有門診，休診中';
+      box.appendChild(el);
+    } else if (data.closed === true){
+      const el = document.createElement('div');
+      el.className = 'hex coral';
+      el.textContent = '當前時段已停止掛號';
+      box.appendChild(el);
+    }
+  }
+
+  function animateNumberText(text){
+    const el = document.getElementById('bigNumber');
+    el.textContent = text;
+    el.classList.remove('pop');
+    void el.offsetWidth; // reflow
+    el.classList.add('pop');
+  }
+
+  async function fetchNumber(){
+    try{
+      const data = await fetchJSON().catch(async () => await fetchJSONP());
+      renderStatusPill(data);
+
+      const n = Number(data.number);
+      if (!Number.isFinite(n) || n < 0 || n >= 1000) return;
+
+      const current = String(n);               // ✅ 不補 0
+      if(current !== lastNumber){
+        animateNumberText(current);
+        sayToSR(`目前看診號碼：${current}`);
+        if (voiceToggle.checked) speakNumber(n);
+        lastNumber = current;
+      }
+    }catch(err){
+      // console.warn('抓號失敗：', err?.message || err);
+    }
+  }
+
+  const pad2 = n => String(n).padStart(2,'0');
+  function updateTWTime(){
+    const el=document.getElementById('twTime');
+    const now = new Date();
+    const tw = new Date(now.toLocaleString('en-US', { timeZone:'Asia/Taipei' }));
+    const wMap = ['日','一','二','三','四','五','六'];
+    el.textContent = `${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())}（${wMap[tw.getDay()]}） `+
+                     `${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
+  }
+
+  // 啟動
+  fetchNumber(); setInterval(fetchNumber, POLL_MS);
+  updateTWTime(); setInterval(updateTWTime, 1000);
 </script>
 </body>
 </html>
