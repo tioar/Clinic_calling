@@ -20,8 +20,8 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 本地標楷體 -->
 <style>
+/* ===== 本地楷體 ===== */
 @font-face{
   font-family:"TW-Kai";
   src:url("./fonts/TW-Kai.woff2") format("woff2");
@@ -32,6 +32,14 @@
   src:url("./fonts/CwTeXKai.woff2") format("woff2");
   font-weight:400; font-style:normal; font-display:swap;
 }
+/* ✅ 只給數字用的楷體（強制 iPhone 也吃楷體 0–9） */
+@font-face{
+  font-family:"KaiDigits";
+  src:url("./fonts/TW-Kai.woff2") format("woff2");
+  font-weight:400; font-style:normal; font-display:swap;
+  unicode-range: U+0030-0039; /* 0-9 */
+}
+
 :root{
   --primary:#35579A;
   --soft:#A5B8D0;
@@ -41,10 +49,13 @@
   --pill-red:#E53935;
   --pill-coral:#F37163;
 
-  /* 全站與號碼都用楷體 */
-  --text-font: "TW-Kai","CwTeXKai","LXGW WenKai TC","DFKai-SB","KaiTi","BiauKai","Microsoft JhengHei",serif;
-  --digit-font: var(--text-font);
+  --text-font: "TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai",
+               "LXGW WenKai TC","DFKai-SB","Microsoft JhengHei",serif;
+  /* 大號碼改用 KaiDigits 優先，確保 iPhone 是楷體 */
+  --digit-font: "KaiDigits","TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai",
+                "LXGW WenKai TC",serif;
 }
+
 *{box-sizing:border-box}
 body{
   font-family:var(--text-font);
@@ -55,9 +66,7 @@ body{
 }
 /* 最大卡片：細邊＋雙層陰影 */
 .container{
-  position:relative;
-  width:min(920px,96vw);
-  background:#fff;
+  width:min(920px,96vw); background:#fff;
   border:1.5px solid var(--soft);
   padding:clamp(16px,4vw,32px);
   text-align:center;
@@ -66,7 +75,7 @@ body{
     0 2px 6px rgba(17,24,39,.08);
 }
 
-/* 跑馬燈：#658DC6 白字，字級與下方提醒一致 */
+/* 跑馬燈：#658DC6 白字，字級與注意事項一致 */
 .marquee{
   --gap:2rem; --speed:45s;
   background:#658DC6; color:#fff;
@@ -75,41 +84,42 @@ body{
   font-size:clamp(14px,2vw,16px); font-weight:700;
 }
 .marquee__track{display:inline-flex; align-items:center; width:max-content; animation:marquee-loop var(--speed) linear infinite;}
-.marquee__track > span{padding-right:var(--gap); flex-shrink:0;}
-.marquee:hover .marquee__track{animation-play-state:paused;}
+.marquee__track > span{padding-right:var(--gap)}
+.marquee:hover .marquee__track{animation-play-state:paused}
 @keyframes marquee-loop{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-.logo-wrap{margin:10px 0 6px}
-.logo{height:clamp(120px,22vw,200px); max-width:82vw; object-fit:contain; display:block; margin:0 auto; background:transparent; border:none}
-
-/* 六邊形狀態標籤（長條） */
-.pill-wrap{display:flex; justify-content:center; margin:6px 0 10px}
-.hex{
-  --cut:18px;
-  display:inline-block; padding:.55rem 1.4rem;
-  color:#fff; font-weight:800; letter-spacing:.5px;
-  clip-path:polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%);
-  box-shadow:0 6px 16px rgba(0,0,0,.12);
-  user-select:none;
-}
-.hex.red{background:var(--pill-red)}
-.hex.coral{background:var(--pill-coral)}
+.logo{height:clamp(120px,22vw,200px); max-width:82vw; object-fit:contain; display:block; margin:10px auto 6px}
 
 /* 標題更大 */
-.title-row{display:flex; align-items:center; justify-content:center; gap:12px; margin:12px 0 4px; flex-wrap:wrap}
 .title-row h1{
   margin:0; color:#1f2f63;
   font-size:clamp(32px,5vw,48px); font-weight:800; letter-spacing:.7px;
 }
 
-/* 目前時間 */
-.now-time{color:#35579A; font-weight:800; margin-bottom:8px}
+/* ✅ 目前年月日時間 放大 */
+.now-time{
+  color:#35579A; font-weight:800; margin-bottom:8px;
+  font-size:clamp(16px,3.6vw,22px);
+}
+
+/* 六邊形標籤（長條）＋字體放大 */
+.pill-wrap{display:flex; justify-content:center; margin:8px 0 12px}
+.hex{
+  --cut:18px;
+  display:inline-block; padding:.6rem 1.6rem;
+  color:#fff; font-weight:800; letter-spacing:.6px;
+  clip-path:polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%);
+  box-shadow:0 6px 16px rgba(0,0,0,.12);
+  font-size:clamp(14px,3.6vw,20px);   /* ✅ 放大 */
+}
+.hex.red{background:var(--pill-red)}
+.hex.coral{background:var(--pill-coral)}
 
 /* 叫號：無底色、楷體、更大、不補零 */
-.number-box{display:inline-block; margin:4px auto 12px; padding:0; background:transparent}
+.number-box{display:inline-block; margin:4px auto 12px}
 .number{
   font-family:var(--digit-font);
-  font-size:clamp(120px,20vw,260px);
+  font-size:clamp(120px,20vw,260px); /* ✅ 已很大 */
   line-height:1; color:var(--digit-red);
   letter-spacing:.02em; font-weight:700;
 }
@@ -122,13 +132,19 @@ body{
 .chk{width:22px; height:22px; margin:0; accent-color:var(--beige); appearance:auto; cursor:pointer}
 .bell{font-size:22px; line-height:1}
 
-/* 提醒 */
-.note{background:#F2F6FB; padding:16px 20px; border:none; margin:14px auto 10px; color:#274a6b; font-weight:700; width:min(760px,100%); text-align:center; font-size:1rem}
+/* ✅ 注意事項整段放大（含行高） */
+.note{
+  background:#F2F6FB; padding:18px 22px; border:none;
+  margin:14px auto 12px; color:#274a6b; font-weight:700;
+  width:min(760px,100%); text-align:center;
+  font-size:clamp(14px,3.2vw,18px); line-height:1.75;
+}
 .note p{margin:.35em 0}
+
 .palette{height:8px; margin:8px auto 14px; width:min(560px,90%); background:linear-gradient(to right,#D8C0AD 0 22%,#6db337 22% 45%,#35579A 45% 82%,#A5B8D0 82% 100%)}
 .schedule{margin-top:6px; max-width:100%; border:none; box-shadow:none}
 
-/* 螢幕閱讀器提示專區 */
+/* 螢幕閱讀器用 */
 .sr-only{position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; white-space:nowrap}
 </style>
 </head>
@@ -143,14 +159,12 @@ body{
       </div>
     </div>
 
-    <div class="logo-wrap">
-      <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
-    </div>
+    <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
 
     <div class="title-row"><h1 id="sectionTitle">目前看診號碼</h1></div>
     <div class="now-time" id="twTime">—</div>
 
-    <!-- 狀態六邊形（位置調到標題＋時間下面） -->
+    <!-- 六邊形標籤 -->
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
     <!-- 叫號（無底色、不補0） -->
@@ -164,7 +178,6 @@ body{
       <div id="voiceHint" class="sr-only">勾選後，號碼變更時會自動語音播報。</div>
     </div>
 
-    <!-- 給讀屏的即時狀態提示 -->
     <div id="srStatus" class="sr-only" aria-live="polite"></div>
 
     <div class="note">
@@ -202,7 +215,7 @@ body{
   let si=0; sch.onerror=function(){ if(si<schFallbacks.length){ this.src=schFallbacks[si++]; } else { this.style.display='none'; } };
 })();
 
-let lastNumber=''; // 不預設 000
+let lastNumber=''; /* 不預設 000 */
 
 /* 抓號設定 */
 const POLL_MS=1500;
@@ -237,27 +250,24 @@ function unlockTTS(){
 function speakText(txt){
   if(!Voice.ready||!txt) return;
   if(!Voice.enabled && !speakText._oneshot) return;
-  if(Voice.timer){ clearTimeout(Voice.timer); Voice.timer=null; }
   const play=()=>{
     const warm=new SpeechSynthesisUtterance('\u00A0');
     warm.lang=(Voice.zhVoice&&Voice.zhVoice.lang)||'zh-TW';
     warm.rate=TTS_RATE; warm.pitch=1; warm.volume=0;
-    const safety=setTimeout(()=>{ try{ speechSynthesis.cancel(); }catch(e){} reallySpeak(txt); }, WARM_SAFETY_MS);
-    warm.onend=()=>{ clearTimeout(safety); setTimeout(()=>reallySpeak(txt), WARM_PLAY_DELAY); };
+    const safety=setTimeout(()=>{ try{ speechSynthesis.cancel(); }catch(e){} reallySpeak(txt); }, isWinChrome?800:650);
+    warm.onend=()=>{ clearTimeout(safety); setTimeout(()=>reallySpeak(txt), isWinChrome?100:60); };
     try{ speechSynthesis.resume(); }catch(e){}
     speechSynthesis.speak(warm);
   };
   if(speechSynthesis.speaking||speechSynthesis.pending){
     try{ speechSynthesis.cancel(); }catch(e){}
-    setTimeout(play, WARM_CANCEL_DELAY);
+    setTimeout(play, isWinChrome?220:120);
   }else{
-    setTimeout(play, WARM_PLAY_DELAY);
+    setTimeout(play, isWinChrome?100:60);
   }
 }
 function reallySpeak(txt){
-  const safeTail=String(txt).replace(/[~～]+$/g,'。');
-  const prefix=isWinChrome?'\u3000，':'';
-  const u=new SpeechSynthesisUtterance(prefix+safeTail);
+  const u=new SpeechSynthesisUtterance((UA.includes('windows')?'\u3000，':'')+String(txt).replace(/[~～]+$/g,'。'));
   if(!Voice.zhVoice||!Voice.voices.length) loadVoices();
   if(Voice.zhVoice) u.voice=Voice.zhVoice;
   u.lang=(Voice.zhVoice&&Voice.zhVoice.lang)||'zh-TW';
@@ -277,7 +287,7 @@ function zhRead(n){
 }
 function speakNumber(n){ speakText(`${zhRead(n)}號、${zhRead(n)}號請進診間。`); }
 
-/* 無障礙提示 */
+/* SR */
 const srStatus=document.getElementById('srStatus');
 function sayToSR(text){ srStatus.textContent=text; }
 
@@ -300,24 +310,24 @@ voiceToggle.addEventListener('change',()=>{
 window.addEventListener('touchend',function once(){ if(!Voice.unlocked){ unlockTTS(); } window.removeEventListener('touchend',once,true); },true);
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ try{ speechSynthesis.resume(); }catch(e){} }});
 
-/* 抓號 */
+/* 抓號（不補 0） */
 async function fetchJSON(){
   const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
-  const res=await fetch(`${GAS_URL}?ts=${Date.now()}`,{cache:'no-store', signal:ctrl.signal});
+  const t=setTimeout(()=>ctrl.abort(), 1200);
+  const res=await fetch(`${"https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec"}?ts=${Date.now()}`,{cache:'no-store', signal:ctrl.signal});
   clearTimeout(t);
   if(!res.ok) throw new Error(res.statusText);
   return res.json();
 }
 function fetchJSONP(){
   return new Promise((resolve,reject)=>{
-    const cbName='onClinicData_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+    const cb='onClinic_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
     const s=document.createElement('script');
-    const timeout=setTimeout(()=>{ cleanup(); reject(new Error('JSONP timeout')); },5000);
-    window[cbName]=(data)=>{ cleanup(); resolve(data); };
-    function cleanup(){ clearTimeout(timeout); delete window[cbName]; s.remove(); }
-    s.src=`${GAS_URL}?callback=${cbName}&ts=${Date.now()}`;
-    s.onerror=()=>{ cleanup(); reject(new Error('JSONP load error')); };
+    const done=()=>{ delete window[cb]; s.remove(); };
+    const to=setTimeout(()=>{ done(); reject(new Error('jsonp timeout')); },5000);
+    window[cb]=(d)=>{ clearTimeout(to); done(); resolve(d); };
+    s.src=`https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec?callback=${cb}&ts=${Date.now()}`;
+    s.onerror=()=>{ clearTimeout(to); done(); reject(new Error('jsonp error')); };
     document.head.appendChild(s);
   });
 }
@@ -331,19 +341,17 @@ function renderStatusPill(data){
     const el=document.createElement('div'); el.className='hex coral'; el.textContent='當前時段已停止掛號'; box.appendChild(el);
   }
 }
-
 function animateNumberText(text){
   const el=document.getElementById('bigNumber');
   el.textContent=text;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
 }
-
 async function fetchNumber(){
   try{
     const data=await fetchJSON().catch(async()=>await fetchJSONP());
     renderStatusPill(data);
     const n=Number(data.number);
-    if(!Number.isFinite(n) || n<0 || n>=1000) return;
+    if(!Number.isFinite(n)||n<0||n>=1000) return;
     const current=String(n); // 不補 0
     if(current!==lastNumber){
       animateNumberText(current);
@@ -351,7 +359,7 @@ async function fetchNumber(){
       if(Voice.enabled) speakNumber(n);
       lastNumber=current;
     }
-  }catch(err){}
+  }catch(e){}
 }
 
 /* 時間 */
@@ -360,12 +368,12 @@ function updateTWTime(){
   const el=document.getElementById('twTime');
   const now=new Date();
   const tw=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Taipei'}));
-  const wMap=['日','一','二','三','四','五','六'];
-  el.textContent=`${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())} (${wMap[tw.getDay()]}) ${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
+  const w=['日','一','二','三','四','五','六'];
+  el.textContent=`${tw.getFullYear()}/${pad2(tw.getMonth()+1)}/${pad2(tw.getDate())} (${w[tw.getDay()]}) ${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
 }
 
 /* 啟動 */
-fetchNumber(); setInterval(fetchNumber, POLL_MS);
+fetchNumber(); setInterval(fetchNumber, 1500);
 updateTWTime(); setInterval(updateTWTime, 1000);
 </script>
 </body>
