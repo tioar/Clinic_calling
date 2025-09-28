@@ -20,48 +20,50 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 主要毛筆楷體（Google 免費，iOS/Android/桌機都可用） -->
-<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
-
 <style>
-  /* ============ 本地字型（你上傳的檔） ============ */
-  @font-face{
-    font-family:"TW-Kai";
-    src:url("./fonts/TW-Kai.woff2") format("woff2");
-    font-weight:400; font-style:normal; font-display:swap;
-  }
+  /* ============ 本地字型 ============ */
   @font-face{
     font-family:"CwTeXKai";
     src:url("./fonts/CwTeXKai.woff2") format("woff2");
     font-weight:400; font-style:normal; font-display:swap;
   }
+  /* 讓粗體也能用同一份檔（瀏覽器可合成粗體） */
+  @font-face{
+    font-family:"CwTeXKai";
+    src:url("./fonts/CwTeXKai.woff2") format("woff2");
+    font-weight:700; font-style:normal; font-display:swap;
+  }
+  @font-face{
+    font-family:"TW-Kai";
+    src:url("./fonts/TW-Kai.woff2") format("woff2");
+    font-weight:400; font-style:normal; font-display:swap;
+  }
 
   :root{
-    --primary:#35579A;      /* Classic Blue */
-    --soft:#A5B8D0;         /* 藍系細線 */
-    --light:#EAF1FF;        /* 很淺藍（需要時可用） */
-    --beige:#D8C0AD;        /* 卡其（核取） */
-    --digit-red:#B91C1C;    /* 號碼紅 */
-    --pill-red:#E53935;     /* 休診 */
-    --pill-coral:#F37163;   /* 停止掛號 */
-    --marquee:#658DC6;      /* 跑馬燈底色（你指定） */
+    --primary:#35579A;
+    --soft:#A5B8D0;
+    --light:#EAF1FF;
+    --beige:#D8C0AD;
+    --digit-red:#B91C1C;
+    --pill-red:#E53935;
+    --pill-coral:#F37163;
+    --marquee:#658DC6;
 
-    /* ✅ 全站毛筆楷體優先，備援是你上傳的標楷體 */
-    --text-font: "LXGW WenKai TC","TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai","Microsoft JhengHei",serif;
-    --digit-font: "LXGW WenKai TC","TW-Kai","CwTeXKai","Kaiti TC","KaiTi","BiauKai",serif;
+    /* ✅ 全站與號碼都用 CwTeXKai */
+    --text-font: "CwTeXKai","TW-Kai","Kaiti TC","KaiTi","BiauKai","Microsoft JhengHei",serif;
+    --digit-font: "CwTeXKai","TW-Kai","Kaiti TC","KaiTi","BiauKai",serif;
   }
 
   *{ box-sizing:border-box; }
-  /* ✅ 全站字體加大 + 毛筆粗體 */
   body{
     font-family:var(--text-font);
-    font-weight:700;                  /* 粗體風格 */
+    font-weight:700;                 /* 全站粗體 */
     -webkit-font-smoothing:antialiased;
     background:#fff;
     margin:0;
     padding:clamp(16px,4vw,40px);
     display:flex; justify-content:center; color:#1c1c1c;
-    font-size:18px;                   /* 全站加大（跑馬燈另外指定不受影響） */
+    font-size:18px;                  /* 全站加大（跑馬燈另設） */
   }
 
   .container{
@@ -71,21 +73,19 @@
     border:1px solid #dfe6f4;
     padding:clamp(18px,4.5vw,36px);
     text-align:center;
-    /* ✅ 陰影（柔一點、兩層更自然） */
     box-shadow:
       0 14px 28px rgba(53,87,154,.12),
       0 6px  12px rgba(53,87,154,.10);
   }
 
-  /* ============ 跑馬燈（不受全站放大影響） ============ */
+  /* 跑馬燈（固定較小，不跟全站字級走） */
   .marquee{
     --gap: 2rem; --speed: 45s;
     background:var(--marquee); color:#fff;
     padding:10px 0; margin:0 auto 16px;
     overflow:hidden; white-space:nowrap; user-select:none;
-    font-size:clamp(13px,2vw,16px);   /* ✅ 固定較小，不被全站放大牽動 */
+    font-size:clamp(13px,2vw,16px);
     font-weight:700;
-    border-radius:0;
   }
   .marquee__track{ display:inline-flex; align-items:center; width:max-content; animation:marquee-loop var(--speed) linear infinite; }
   .marquee__track > span{ padding-right:var(--gap); flex-shrink:0; }
@@ -99,66 +99,61 @@
     background:transparent; border:none; box-shadow:none; display:block; margin:0 auto;
   }
 
-  /* ============ 標題 / 時間 ============ */
   .title-row{ display:flex; align-items:center; justify-content:center; gap:12px; margin:12px 0 6px; flex-wrap:wrap; }
   .title-row h1{
     margin:0; color:#1f2f63;
-    font-size:clamp(40px,6vw,60px);   /* ✅ 比之前更大 */
-    font-weight:900;                  /* ✅ 粗體 */
+    font-size:clamp(40px,6vw,60px);  /* 更大 */
+    font-weight:900;                 /* 粗體 */
     letter-spacing:.6px;
   }
   .now-time{
     color:#35579A;
     font-weight:800;
-    font-size:clamp(20px,3.6vw,26px); /* ✅ 加大 */
+    font-size:clamp(20px,3.6vw,26px);
     margin:2px 0 10px;
   }
 
-  /* ============ 狀態六邊形（放在標題/時間下面） ============ */
   .pill-wrap{ display:flex; justify-content:center; margin:8px 0 12px; min-height:0; }
   .hex{
     display:inline-block; padding:.62rem 1.5rem;
     color:#fff; font-weight:900; letter-spacing:.5px;
     clip-path:polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
     box-shadow:0 6px 16px rgba(0,0,0,.10);
-    font-size:clamp(16px,3.5vw,22px); /* ✅ 加大 */
+    font-size:clamp(16px,3.5vw,22px);
   }
   .hex.red{   background:var(--pill-red);}
   .hex.coral{ background:var(--pill-coral);}
 
-  /* ============ 大號碼（無底色、不補 0、毛筆粗體） ============ */
+  /* 大號碼（無底色、不補 0、CwTeXKai 粗體） */
   .number{
     font-family:var(--digit-font);
-    font-size:clamp(140px,22vw,320px); /* ✅ 再更大 */
+    font-size:clamp(140px,22vw,320px);
     line-height:1; color:var(--digit-red);
     letter-spacing:.015em;
-    font-weight:900;                    /* ✅ 粗體 */
+    font-weight:900;
     margin:.1em 0 .2em 0;
   }
   @keyframes pop { 0%{ transform:scale(.96); opacity:.85 } 100%{ transform:scale(1); opacity:1 } }
   .pop{ animation:pop .25s ease-out }
 
-  /* ============ 語音核取 + 鈴鐺 ============ */
   .voice-row{
     display:flex; align-items:center; justify-content:center;
     gap:12px; margin:10px 0 18px; flex-wrap:nowrap;
-    font-size:1.05rem;                 /* ✅ 加大 */
+    font-size:1.05rem;
   }
   .voice-label{ font-weight:900; color:#3b2e1e; letter-spacing:.5px; }
   .chk{ width:22px; height:22px; margin:0; accent-color:var(--beige); appearance:auto; cursor:pointer; }
   .bell{ font-size:24px; line-height:1; }
 
-  /* ============ 注意事項 ============ */
   .note{
     background:#F2F6FB; padding:18px 22px; border:none; border-radius:0; margin:14px auto 12px; color:#274a6b;
-    font-weight:800; width:min(860px,100%); text-align:center; font-size:1.06rem; /* ✅ 加大 */
+    font-weight:800; width:min(860px,100%); text-align:center; font-size:1.06rem;
   }
   .note p{ margin:.45em 0; }
 
   .palette{ height:8px; margin:10px auto 12px; width:min(560px,90%); background:linear-gradient(to right,#D8C0AD 0 22%,#6db337 22% 45%,#35579A 45% 82%,#A5B8D0 82% 100%); }
   .schedule{ margin-top:6px; max-width:100%; border:none; box-shadow:none; }
 
-  /* 只給讀屏的提示區域 */
   .sr-only{
     position:absolute !important; width:1px; height:1px;
     padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
@@ -169,7 +164,7 @@
 
 <body>
   <div class="container">
-    <!-- 跑馬燈（白字、#658DC6） -->
+    <!-- 跑馬燈 -->
     <div class="marquee" aria-label="診所訊息跑馬燈">
       <div class="marquee__track" id="marqueeTrack">
         <span>✦ 陳萬龍診所門診時間：☀︎ 早診 08:30–11:30（最晚報到10:30）；☁︎ 午診 14:00–17:00（最晚報到16:00）；☾ 晚診 18:00–20:30（最晚報到20:00）。逾時視同放棄，名額將釋出給現場掛號。</span>
@@ -184,10 +179,10 @@
     <div class="title-row"><h1 id="sectionTitle">目前看診號碼</h1></div>
     <div class="now-time" id="twTime">—</div>
 
-    <!-- 六邊形狀態（放在標題/時間下面） -->
+    <!-- 狀態六邊形（標題/時間下方） -->
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <!-- 大號碼（無底色、不補 0） -->
+    <!-- 大號碼（不補0） -->
     <div id="bigNumber" class="number">0</div>
 
     <!-- 語音：核取 + 🔔/🔕 -->
@@ -198,7 +193,6 @@
       <div id="voiceHint" class="sr-only">勾選後，號碼變更時會自動語音播報。</div>
     </div>
 
-    <!-- 給讀屏的即時狀態提示 -->
     <div id="srStatus" class="sr-only" aria-live="polite"></div>
 
     <div class="note">
@@ -240,7 +234,6 @@
 
   let lastNumber = '-1';
 
-  /* 抓號設定 */
   const POLL_MS = 1500;
   const FETCH_TIMEOUT = 1200;
   const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
@@ -277,7 +270,7 @@
     if (!Voice.enabled && !speakText._oneshot) return;
     if (Voice.timer){ clearTimeout(Voice.timer); Voice.timer = null; }
     const play = () => {
-      const warm = new SpeechSynthesisUtterance('\u00A0'); // 無聲暖機
+      const warm = new SpeechSynthesisUtterance('\u00A0');
       warm.lang = (Voice.zhVoice && Voice.zhVoice.lang) || 'zh-TW';
       warm.rate = TTS_RATE; warm.pitch = 1; warm.volume = 0;
 
@@ -328,11 +321,9 @@
     speakText(`${zh}號、${zh}號請進診間。`);
   }
 
-  // 無障礙讀屏提示
   const srStatus = document.getElementById('srStatus');
   function sayToSR(text){ srStatus.textContent = text; }
 
-  // 語音核取方塊
   const voiceToggle = document.getElementById('voiceToggle');
   const bell = document.getElementById('bell');
   voiceToggle.addEventListener('change', ()=>{
@@ -415,7 +406,7 @@
       const n = Number(data.number);
       if (!Number.isFinite(n) || n < 0 || n >= 1000) return;
 
-      const current = String(n);               // ✅ 不補 0
+      const current = String(n);   // 不補 0
       if(current !== lastNumber){
         animateNumberText(current);
         sayToSR(`目前看診號碼：${current}`);
@@ -437,7 +428,6 @@
                      `${pad2(tw.getHours())}:${pad2(tw.getMinutes())}:${pad2(tw.getSeconds())}`;
   }
 
-  // 啟動
   fetchNumber(); setInterval(fetchNumber, POLL_MS);
   updateTWTime(); setInterval(updateTWTime, 1000);
 </script>
