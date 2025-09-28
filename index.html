@@ -24,24 +24,23 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 中央大號碼：Cinzel -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
 <style>
-/* ===== 內嵌自家楷體 ===== */
+/* ===== 內嵌本地楷體 ===== */
 @font-face{
   font-family:"CwTeXKai";
   src:url("./fonts/CwTeXKai.woff2") format("woff2");
   font-weight:400; font-style:normal; font-display:swap;
 }
-/* 強制 0–9 使用楷體（避免 iOS 因粗體權重而整段 fallback） */
+@font-face{
+  font-family:"TW-Kai";
+  src:url("./fonts/TW-Kai.woff2") format("woff2");
+  font-weight:400; font-style:normal; font-display:swap;
+}
+/* 強制 0–9 使用楷體（避免 iOS 粗體 fallback） */
 @font-face{
   font-family:"KaiDigits";
   src:url("./fonts/CwTeXKai.woff2") format("woff2");
-  font-weight:400;
-  font-style:normal;
-  font-display:swap;
+  font-weight:400; font-style:normal; font-display:swap;
   unicode-range: U+0030-0039; /* 0–9 */
 }
 
@@ -57,7 +56,7 @@
 
   /* 全站楷體（含備援） */
   --text-font: "CwTeXKai","TW-Kai","DFKai-SB","BiauKai","KaiTi","LXGW WenKai TC",serif;
-  /* 大號碼 = 跟全站一樣的楷體 */
+  /* 大號碼也用楷體 */
   --digit-font: var(--text-font);
 }
 
@@ -128,17 +127,17 @@ body{
   font-synthesis:weight;
 }
 
-/* 中央大號碼：Cinzel 粗體 */
+/* 中央大號碼（楷體） */
 .big-wrap{ margin:10px 0 8px; }
 .number{
   font-family: "KaiDigits", var(--digit-font) !important;
   color:#B91C1C;
-  font-weight:700;         /* 700 讓瀏覽器做合成粗體，不會整段 fallback */
-  font-synthesis: weight;  /* 確保 iOS 也合成粗體 */
+  font-weight:700;         /* 合成粗體，避免跳字型 */
+  font-synthesis: weight;
   font-size:clamp(120px,20vw,260px);
   line-height:1;
   letter-spacing:.02em;
-  -webkit-text-stroke: .4px currentColor;
+  -webkit-text-stroke:.4px currentColor;
 }
 
 /* 語音開關：核取方塊 + 🔔/🔕 */
@@ -158,8 +157,7 @@ body{
 }
 .note p{ margin:.4em 0; }
 
-/* ====== 只新增：彩條 + 門診表 ====== */
-/* 彩條：維持原本顏色比例（不動其他外觀） */
+/* ===== 只加回：彩條 + 門診表 ===== */
 .palette{
   height:8px;
   margin:8px auto 14px;
@@ -172,7 +170,6 @@ body{
     #A5B8D0 82% 100%
   );
 }
-/* 門診表：維持原本無邊框無陰影 */
 .schedule{
   margin-top:6px;
   max-width:100%;
@@ -209,7 +206,7 @@ body{
     <!-- 六邊形狀態 -->
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <!-- 中央號碼（Cinzel） -->
+    <!-- 中央號碼（楷體） -->
     <div class="big-wrap" aria-live="polite" aria-atomic="true">
       <div id="bigNumber" class="number">0</div>
     </div>
@@ -230,7 +227,7 @@ body{
       <p>♦︎ 若已過號請再次向櫃檯報到，將依現場狀況調整安排。門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)515-2971。</p>
     </div>
 
-    <!-- ✅ 只加回這兩個 -->
+    <!-- 彩色條 + 門診表 -->
     <div class="palette" aria-hidden="true"></div>
     <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
   </div>
@@ -248,7 +245,7 @@ body{
   marquee.addEventListener('pointercancel', run);
 })();
 
-/* 圖片備援：Logo + 門診表（只新增 schedule 的備援） */
+/* 圖片備援：Logo + 門診表 */
 (function(){
   const logo = document.getElementById('clinicLogo');
   const logoFallbacks = [
@@ -267,7 +264,7 @@ body{
   }
 })();
 
-/* ===== 語音設定（原樣） ===== */
+/* ===== 語音設定 ===== */
 const TTS_RATE = 0.55;
 const UA = navigator.userAgent.toLowerCase();
 const isWinChrome = UA.includes('windows') && UA.includes('chrome') && !UA.includes('edg');
@@ -366,7 +363,7 @@ document.addEventListener('visibilitychange', ()=>{
   }
 });
 
-/* ===== 抓號與顯示（原樣） ===== */
+/* ===== 抓號與顯示 ===== */
 const POLL_MS = 1500;
 const FETCH_TIMEOUT = 1200;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
