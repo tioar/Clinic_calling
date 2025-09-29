@@ -41,25 +41,21 @@
   font-weight:400; font-style:normal; font-display:swap;
 }
 
-/* 修正的 Lora 數字字體定義 - 使用本地字體 */
+/* Lora 字體 - 完整版本（不用 unicode-range） */
 @font-face{
-  font-family:"LoraDigits";
+  font-family:"Lora";
   font-style:normal;
-  font-weight:400;
+  font-weight:500;
   font-display:swap;
-  src: url("./fonts/Lora-Medium.woff2") format("woff2"),
-       url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
-  unicode-range: U+0030-0039; /* 只覆蓋 0–9 */
+  src: url("./fonts/Lora-Medium.woff2") format("woff2");
 }
 
 @font-face{
-  font-family:"LoraDigits";
+  font-family:"Lora";
   font-style:normal;
   font-weight:700;
   font-display:swap;
-  src: url("./fonts/Lora-Bold.woff2") format("woff2"),
-       url("https://fonts.gstatic.com/s/lora/v35/0QIiMX1D_JOuO4xXDftO-K6j.woff2") format("woff2");
-  unicode-range: U+0030-0039; /* 只覆蓋 0–9 */
+  src: url("./fonts/Lora-Bold.woff2") format("woff2");
 }
 
 /* ===== 顏色/字型變數 ===== */
@@ -74,8 +70,8 @@
 
   /* 全站楷體（含備援） */
   --text-font: "CwTeXKai","TW-Kai","DFKai-SB","BiauKai","KaiTi","LXGW WenKai TC",serif;
-  /* 數字使用 Lora，楷體作為備援 */
-  --digit-font: "LoraDigits", "Lora", var(--text-font);
+  /* 數字使用 Lora */
+  --digit-font: "Lora", var(--text-font);
 }
 
 /* ===== 基本排版 ===== */
@@ -151,17 +147,16 @@ body{
 /* 中央大號碼（明確使用 Lora 字體） */
 .big-wrap{ margin:10px 0 8px; }
 .number{
-  font-family: var(--digit-font) !important;
+  font-family: "Lora", var(--text-font) !important;
   color:#B91C1C;
   font-weight:700;
-  font-synthesis: weight;
   font-size:clamp(120px,20vw,260px);
   line-height:1;
   letter-spacing:.02em;
   -webkit-text-stroke:.4px currentColor;
   /* iOS 特別優化 */
-  -webkit-font-feature-settings: "kern" 1;
-  font-feature-settings: "kern" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 語音開關：核取方塊 + 🔔/🔕 */
