@@ -24,9 +24,10 @@
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 本地 Lora 字體預載 -->
-<link rel="preload" href="./fonts/Lora-Medium.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="./fonts/Lora-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<!-- 只為數字用的 Lora 字體（其餘不變） -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 /* ===== 內嵌本地楷體 ===== */
@@ -40,22 +41,24 @@
   src:url("./fonts/TW-Kai.woff2") format("woff2");
   font-weight:400; font-style:normal; font-display:swap;
 }
-
-/* Lora 字體 - 完整版本（不用 unicode-range） */
+/* 強制 0–9 使用楷體（避免 iOS 粗體 fallback） */
 @font-face{
-  font-family:"Lora";
-  font-style:normal;
-  font-weight:500;
-  font-display:swap;
-  src: url("./fonts/Lora-Medium.woff2") format("woff2");
+  font-family:"KaiDigits";
+  src:url("./fonts/CwTeXKai.woff2") format("woff2");
+  font-weight:400; font-style:normal; font-display:swap;
+  unicode-range: U+0030-0039; /* 0–9 */
 }
 
+/* 讓全站 0–9 改用 Lora：只覆蓋數字的 face */
 @font-face{
-  font-family:"Lora";
+  font-family:"LoraDigits";
   font-style:normal;
-  font-weight:700;
+  font-weight:400;
   font-display:swap;
-  src: url("./fonts/Lora-Bold.woff2") format("woff2");
+  /* 先嘗試使用已由上方 <link> 載入的 'Lora'，並提供一個常見的 woff2 後備來源 */
+  src: local("Lora"),
+       url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
+  unicode-range: U+0030-0039; /* 只覆蓋 0–9 */
 }
 
 /* ===== 顏色/字型變數 ===== */
@@ -70,16 +73,16 @@
 
   /* 全站楷體（含備援） */
   --text-font: "CwTeXKai","TW-Kai","DFKai-SB","BiauKai","KaiTi","LXGW WenKai TC",serif;
-  /* 數字使用 Lora */
-  --digit-font: "Lora", var(--text-font);
+  /* 大號碼也用楷體 */
+  --digit-font: var(--text-font);
 }
 
 /* ===== 基本排版 ===== */
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{
-  /* 主要字體還是楷體，數字會透過 .number 類別使用 Lora */
-  font-family: var(--text-font);
+  /* 只在最前面加上 LoraDigits，其他完全不變 */
+  font-family:"LoraDigits", var(--text-font);
   -webkit-font-smoothing:antialiased;
   color:#1c1c1c;
   background:#fff;
@@ -140,23 +143,19 @@ body{
   font-size:clamp(18px,3.8vw,24px);
   font-weight:700;
   font-synthesis:weight;
-  /* 時間中的數字也使用 Lora */
-  font-family: var(--digit-font);
 }
 
-/* 中央大號碼（明確使用 Lora 字體） */
+/* 中央大號碼（改用 LoraDigits，其他不動） */
 .big-wrap{ margin:10px 0 8px; }
 .number{
-  font-family: "Lora", var(--text-font) !important;
+  font-family: "LoraDigits", var(--digit-font) !important;
   color:#B91C1C;
-  font-weight:700;
+  font-weight:700;         /* 合成粗體，避免跳字型 */
+  font-synthesis: weight;
   font-size:clamp(120px,20vw,260px);
   line-height:1;
   letter-spacing:.02em;
   -webkit-text-stroke:.4px currentColor;
-  /* iOS 特別優化 */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 語音開關：核取方塊 + 🔔/🔕 */
@@ -225,7 +224,7 @@ body{
     <!-- 六邊形狀態 -->
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <!-- 中央號碼（Lora 字體） -->
+    <!-- 中央號碼（楷體） -->
     <div class="big-wrap" aria-live="polite" aria-atomic="true">
       <div id="bigNumber" class="number">0</div>
     </div>
