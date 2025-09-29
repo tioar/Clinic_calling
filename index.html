@@ -41,13 +41,14 @@
   font-weight:400; font-style:normal; font-display:swap;
 }
 
-/* Lora 字體 - 本地版本 */
+/* Lora 字體 - 只針對數字 0-9 */
 @font-face{
   font-family:"Lora";
   font-style:normal;
   font-weight:500;
   font-display:swap;
   src: url("fonts/Lora-Medium.woff2") format("woff2");
+  unicode-range: U+0030-0039, U+002D, U+003A, U+002F, U+0028, U+0029; /* 0-9 和 - : / ( ) */
 }
 
 @font-face{
@@ -56,6 +57,7 @@
   font-weight:700;
   font-display:swap;
   src: url("fonts/Lora-Bold.woff2") format("woff2");
+  unicode-range: U+0030-0039, U+002D, U+003A, U+002F, U+0028, U+0029; /* 0-9 和 - : / ( ) */
 }
 
 /* 備用：如果本地字體載入失敗，使用 Google Fonts */
@@ -65,6 +67,7 @@
   font-weight:400;
   font-display:swap;
   src: url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
+  unicode-range: U+0030-0039, U+002D, U+003A, U+002F, U+0028, U+0029;
 }
 
 @font-face{
@@ -73,6 +76,7 @@
   font-weight:700;
   font-display:swap;
   src: url("https://fonts.gstatic.com/s/lora/v35/0QIiMX1D_JOuO4xXDftO-K6j.woff2") format("woff2");
+  unicode-range: U+0030-0039, U+002D, U+003A, U+002F, U+0028, U+0029;
 }
 
 /* ===== 顏色/字型變數 ===== */
@@ -95,8 +99,8 @@
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{
-  /* 主要字體還是楷體，數字會透過 .number 類別使用 Lora */
-  font-family: var(--text-font);
+  /* 全站使用混合字體：Lora處理數字，楷體處理中文 */
+  font-family: "Lora", "LoraFallback", var(--text-font);
   -webkit-font-smoothing:antialiased;
   color:#1c1c1c;
   background:#fff;
@@ -123,7 +127,6 @@ body{
   overflow:hidden; white-space:nowrap; user-select:none;
   font-size:clamp(14px,2.4vw,16px);
   letter-spacing:.5px;
-  font-family: var(--digit-font);
 }
 .marquee__track{ display:inline-flex; align-items:center; width:max-content; animation:marquee var(--speed) linear infinite; }
 .marquee__track>span{ padding-right:var(--gap); flex-shrink:0; }
@@ -192,7 +195,6 @@ body{
   color:#274a6b; font-weight:700;
   width:min(820px,100%); margin:0 auto;
   font-size:clamp(16px,3.2vw,20px);
-  font-family: var(--digit-font);
 }
 .note p{ margin:.4em 0; }
 
@@ -262,7 +264,7 @@ body{
 
     <!-- 注意事項 -->
     <div class="note">
-      <p>♦︎ 雲端號碼僅供參考，實際叫號以現場為準。每位病患約 3~5 分鐘，請提前到場在可看到燈號的位置等候以免過號。</p>
+      <p>♦︎ 雲端號碼僅供參考，實際叫號以現場為準。每位病患約 3–5 分鐘，請提前到場在可看到燈號的位置等候以免過號。</p>
       <p>♦︎ 若已過號請再次向櫃檯報到，將依現場狀況調整安排。門診可能視現場狀況提前停止掛號，如有疑問請來電 (03)515-2971。</p>
     </div>
 
