@@ -17,17 +17,16 @@
 <meta property="og:url" content="https://tioar.github.io/Clinic_calling/">
 <meta property="og:locale" content="zh_TW">
 
-<!-- 本地楷體預載 -->
-<link rel="preload" href="./fonts/CwTeXKai.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="./fonts/TW-Kai.woff2"  as="font" type="font/woff2" crossorigin>
+<!-- 本地楷體預載 - 移除 crossorigin -->
+<link rel="preload" href="./fonts/CwTeXKai.woff2" as="font" type="font/woff2">
+<link rel="preload" href="./fonts/TW-Kai.woff2"  as="font" type="font/woff2">
 
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 只為數字用的 Lora 字體（其餘不變） -->
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+<!-- 本地 Lora 字體預載 - 移除 crossorigin -->
+<link rel="preload" href="fonts/Lora-Medium.woff2" as="font" type="font/woff2">
+<link rel="preload" href="fonts/Lora-Bold.woff2" as="font" type="font/woff2">
 
 <style>
 /* ===== 內嵌本地楷體 ===== */
@@ -41,24 +40,39 @@
   src:url("./fonts/TW-Kai.woff2") format("woff2");
   font-weight:400; font-style:normal; font-display:swap;
 }
-/* 強制 0–9 使用楷體（避免 iOS 粗體 fallback） */
+
+/* Lora 字體 - 本地版本 */
 @font-face{
-  font-family:"KaiDigits";
-  src:url("./fonts/CwTeXKai.woff2") format("woff2");
-  font-weight:400; font-style:normal; font-display:swap;
-  unicode-range: U+0030-0039; /* 0–9 */
+  font-family:"Lora";
+  font-style:normal;
+  font-weight:500;
+  font-display:swap;
+  src: url("fonts/Lora-Medium.woff2") format("woff2");
 }
 
-/* 讓全站 0–9 改用 Lora：只覆蓋數字的 face */
 @font-face{
-  font-family:"LoraDigits";
+  font-family:"Lora";
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  src: url("fonts/Lora-Bold.woff2") format("woff2");
+}
+
+/* 備用：如果本地字體載入失敗，使用 Google Fonts */
+@font-face{
+  font-family:"LoraFallback";
   font-style:normal;
   font-weight:400;
   font-display:swap;
-  /* 先嘗試使用已由上方 <link> 載入的 'Lora'，並提供一個常見的 woff2 後備來源 */
-  src: local("Lora"),
-       url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
-  unicode-range: U+0030-0039; /* 只覆蓋 0–9 */
+  src: url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
+}
+
+@font-face{
+  font-family:"LoraFallback";
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  src: url("https://fonts.gstatic.com/s/lora/v35/0QIiMX1D_JOuO4xXDftO-K6j.woff2") format("woff2");
 }
 
 /* ===== 顏色/字型變數 ===== */
@@ -73,16 +87,16 @@
 
   /* 全站楷體（含備援） */
   --text-font: "CwTeXKai","TW-Kai","DFKai-SB","BiauKai","KaiTi","LXGW WenKai TC",serif;
-  /* 大號碼也用楷體 */
-  --digit-font: var(--text-font);
+  /* 數字使用 Lora，加入多層備援 */
+  --digit-font: "Lora", "LoraFallback", Georgia, "Times New Roman", serif;
 }
 
 /* ===== 基本排版 ===== */
 *{ box-sizing:border-box; }
 html,body{ margin:0; padding:0; }
 body{
-  /* 只在最前面加上 LoraDigits，其他完全不變 */
-  font-family:"LoraDigits", var(--text-font);
+  /* 主要字體還是楷體，數字會透過 .number 類別使用 Lora */
+  font-family: var(--text-font);
   -webkit-font-smoothing:antialiased;
   color:#1c1c1c;
   background:#fff;
@@ -143,19 +157,24 @@ body{
   font-size:clamp(18px,3.8vw,24px);
   font-weight:700;
   font-synthesis:weight;
+  /* 時間中的數字也使用 Lora */
+  font-family: var(--digit-font);
 }
 
-/* 中央大號碼（改用 LoraDigits，其他不動） */
+/* 中央大號碼（明確使用 Lora 字體） */
 .big-wrap{ margin:10px 0 8px; }
 .number{
-  font-family: "LoraDigits", var(--digit-font) !important;
+  font-family: var(--digit-font) !important;
   color:#B91C1C;
-  font-weight:700;         /* 合成粗體，避免跳字型 */
-  font-synthesis: weight;
+  font-weight:700;
   font-size:clamp(120px,20vw,260px);
   line-height:1;
   letter-spacing:.02em;
   -webkit-text-stroke:.4px currentColor;
+  /* iOS 特別優化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* 語音開關：核取方塊 + 🔔/🔕 */
@@ -224,7 +243,7 @@ body{
     <!-- 六邊形狀態 -->
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
-    <!-- 中央號碼（楷體） -->
+    <!-- 中央號碼（Lora 字體） -->
     <div class="big-wrap" aria-live="polite" aria-atomic="true">
       <div id="bigNumber" class="number">0</div>
     </div>
