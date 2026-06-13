@@ -405,17 +405,20 @@ document.addEventListener('visibilitychange', ()=>{
 });
 
 /* ===== 抓號與顯示 ===== */
-const POLL_MS = 1500;
-const FETCH_TIMEOUT = 1200;
+const POLL_MS = 1000;
+const FETCH_TIMEOUT = 3000;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
 
 async function fetchJSON() {
   const ctrl = new AbortController();
   const t = setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
-  const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, { cache:'no-store', signal: ctrl.signal });
-  clearTimeout(t);
-  if(!res.ok) throw new Error(res.statusText);
-  return res.json();
+  try {
+    const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, { cache:'no-store', signal: ctrl.signal });
+    if(!res.ok) throw new Error(res.statusText);
+    return await res.json();
+  } finally {
+    clearTimeout(t);
+  }
 }
 function fetchJSONP() {
   return new Promise((resolve, reject) => {
@@ -428,6 +431,15 @@ function fetchJSONP() {
     s.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
     document.head.appendChild(s);
   });
+}
+
+async function fetchDataSmart() {
+  try {
+    return await fetchJSON();
+  } catch (err) {
+    if (err && err.name === 'AbortError') throw err;
+    return await fetchJSONP();
+  }
 }
 
 function renderStatusPill(data){
@@ -447,14 +459,17 @@ function renderStatusPill(data){
 }
 
 let lastNumber = '';
+let requestSeq = 0;
 function setBigNumber(nText){
   const el = document.getElementById('bigNumber');
   el.textContent = nText;
 }
 
 async function fetchNumber(){
+  const seq = ++requestSeq;
   try{
-    const data = await fetchJSON().catch(async () => await fetchJSONP());
+    const data = await fetchDataSmart();
+    if (seq !== requestSeq) return;
     renderStatusPill(data);
 
     const n = Number(data.number);
@@ -500,7 +515,12 @@ function updateTWTime(){
 }
 
 /* 啟動 */
-fetchNumber(); setInterval(fetchNumber, POLL_MS);
+async function pollLoop(){
+  await fetchNumber();
+  const delay = document.hidden ? 5000 : POLL_MS;
+  setTimeout(pollLoop, delay);
+}
+pollLoop();
 updateTWTime(); setInterval(updateTWTime, 1000);
 </script>
 </body>
