@@ -166,7 +166,34 @@ body{
 }
 
 /* 中央大號碼（明確使用 Lora 字體） */
-.big-wrap{ margin:10px 0 8px; }
+.big-wrap{ margin:10px 0 8px; position:relative; }
+/* 僅覆蓋號碼區域；不改變號碼的字體或排版。 */
+.number-loading-overlay{
+  position:absolute; inset:0; z-index:1;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:10px;
+  padding:12px;
+  background:rgba(234,241,255,.48);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+  color:var(--classic);
+  font-family:var(--text-font);
+  font-size:clamp(16px,3.5vw,24px);
+  font-weight:700; line-height:1.4;
+  text-align:center;
+}
+.number-loading-overlay[hidden]{ display:none; }
+.number-spinner{
+  width:26px; height:26px; flex-shrink:0;
+  border:3px solid rgba(53,87,154,.2);
+  border-top-color:var(--classic); border-radius:50%;
+  animation:number-spin .9s linear infinite;
+}
+@keyframes number-spin{ to{ transform:rotate(360deg); } }
+/* 不支援毛玻璃時，仍讓底下號碼模糊且隱約可見。 */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .big-wrap.is-obscured .number{ filter:blur(10px); opacity:.5; }
+}
 .number{
   font-family: var(--digit-font) !important;
   color:#B91C1C;
@@ -248,8 +275,12 @@ body{
     <div class="pill-wrap" aria-live="polite" id="statusPill"></div>
 
     <!-- 中央號碼（Lora 字體） -->
-    <div class="big-wrap" aria-live="polite" aria-atomic="true">
+    <div class="big-wrap is-obscured" id="numberWrap" aria-live="polite" aria-atomic="true">
       <div id="bigNumber" class="number">—</div>
+      <div id="numberLoadingOverlay" class="number-loading-overlay">
+        <span class="number-spinner" aria-hidden="true"></span>
+        <span id="numberLoadingText">讀取叫號中</span>
+      </div>
     </div>
 
     <!-- 語音開關 -->
@@ -500,19 +531,27 @@ function setBigNumber(nText){
   el.textContent = nText;
 }
 
-function renderConnectionStatus(){
-  // 保留最後成功的門診狀態，再加上連線提示。
-  renderStatusPill(lastSuccessfulData || {});
-  const message = lastSuccessfulData
-    ? '連線暫時異常，更新中...'
-    : '讀取叫號中...';
-  const el = document.createElement('div');
-  el.className = 'hex coral';
-  el.textContent = message;
-  document.getElementById('statusPill').appendChild(el);
+function showNumberOverlay(state){
+  const message = state === 'error'
+    ? '連線暫時異常，更新中'
+    : '讀取叫號中';
+  document.getElementById('numberLoadingText').textContent = message;
+  document.getElementById('numberLoadingOverlay').hidden = false;
+  document.getElementById('numberWrap').classList.add('is-obscured');
   srStatus.textContent = lastSuccessfulData
     ? `${message}，最後成功看診號碼：${lastSuccessfulData.number}`
     : message;
+}
+
+function hideNumberOverlay(){
+  document.getElementById('numberLoadingOverlay').hidden = true;
+  document.getElementById('numberWrap').classList.remove('is-obscured');
+}
+
+function renderConnectionStatus(){
+  // 六邊形只顯示真正的門診狀態，連線提示顯示在號碼遮罩。
+  renderStatusPill(lastSuccessfulData || {});
+  showNumberOverlay(lastSuccessfulData ? 'error' : 'loading');
 }
 
 async function fetchNumber(){
@@ -527,6 +566,7 @@ async function fetchNumber(){
     lastNumber = current;
     renderStatusPill(data);
     setBigNumber(current);
+    hideNumberOverlay();
     srStatus.textContent = `目前看診號碼：${current}`;
     if (changed && Voice.enabled) speakNumber(n);
   }catch(err){
