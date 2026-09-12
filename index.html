@@ -152,8 +152,6 @@ body{
   align-items:center; justify-content:center; gap:10px;
   padding:12px;
   background:rgba(255,255,255,.75);
-  -webkit-backdrop-filter:blur(10px);
-  backdrop-filter:blur(10px);
   color:var(--classic);
   font-family:var(--text-font);
   font-size:clamp(16px,3.5vw,24px);
@@ -168,10 +166,8 @@ body{
   animation:number-spin .9s linear infinite;
 }
 @keyframes number-spin{ to{ transform:rotate(360deg); } }
-/* 不支援毛玻璃時，仍讓底下號碼模糊且隱約可見。 */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .big-wrap.is-obscured .number{ filter:blur(10px); opacity:.5; }
-}
+/* 從首屏起只模糊號碼，不擷取整片背景；文字與 spinner 保持清晰。 */
+.big-wrap.is-obscured .number{ filter:blur(6px); opacity:.65; }
 .number{
   font-family: var(--digit-font) !important;
   color:#B91C1C;
@@ -229,6 +225,13 @@ body{
   padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
   border:0; white-space:nowrap;
 }
+/* 首屏使用系統字體；載入遮罩、霧化與 spinner 始終立即生效。 */
+html:not(.visual-ready){
+  --text-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --digit-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+html:not(.visual-ready) body{ font-family:var(--text-font); }
+html:not(.visual-ready) .marquee__track{ animation-play-state:paused; }
 </style>
 </head>
 
@@ -283,6 +286,22 @@ body{
   </div>
 
 <script>
+/* 讓瀏覽器先有繪製機會；不依賴 load、字體、圖片或 API 回應。 */
+function afterInitialPaint(callback){
+  let ran = false;
+  function run(){
+    if (ran) return;
+    ran = true;
+    clearTimeout(fallback);
+    callback();
+  }
+  // 背景分頁的 rAF 可能暫停，仍須啟動背景叫號，不等待數秒。
+  const fallback = setTimeout(run, 100);
+  if (typeof requestAnimationFrame === 'function'){
+    requestAnimationFrame(() => setTimeout(run, 0));
+  }
+}
+
 /* 跑馬燈暫停/恢復 */
 (function(){
   const marquee = document.querySelector('.marquee');
@@ -314,13 +333,12 @@ body{
   }
 })();
 
-/* 首屏先繪製；不等待 window.load 或任何圖片／字體下載。 */
+/* 非必要視覺資源獨立排程；不形成 API 或首屏的等待鏈。 */
 (function(){
   let started = false;
   function loadVisualAssets(){
     if (started) return;
     started = true;
-    clearTimeout(safety);
     // 此時圖片 onerror 備援已經綁定，原有備援順序不變。
     for (const id of ['clinicLogo', 'scheduleImg']){
       const img = document.getElementById(id);
@@ -330,14 +348,16 @@ body{
       }
     }
     document.getElementById('deferredFonts').media = 'all';
+    document.documentElement.classList.add('visual-ready');
   }
-  // 背景 WebView 可能暫停 animation frame，提供一次性啟動備援。
-  const safety = setTimeout(loadVisualAssets, 1500);
-  if (typeof requestAnimationFrame === 'function'){
-    requestAnimationFrame(() => requestAnimationFrame(loadVisualAssets));
-  } else {
-    setTimeout(loadVisualAssets, 0);
-  }
+  afterInitialPaint(() => {
+    // API 的啟動不等待這項低優先序工作。
+    if (typeof requestIdleCallback === 'function'){
+      requestIdleCallback(loadVisualAssets, { timeout:500 });
+    } else {
+      setTimeout(loadVisualAssets, 0);
+    }
+  });
 })();
 
 /* ===== 語音設定 ===== */
@@ -653,8 +673,8 @@ async function pollLoop(){
   }
 }
 renderConnectionStatus();
-pollLoop();
 updateTWTime(); setInterval(updateTWTime, 1000);
+afterInitialPaint(pollLoop);
 </script>
 </body>
 </html>
