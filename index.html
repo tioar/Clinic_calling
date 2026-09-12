@@ -249,7 +249,7 @@ body{
 
     <!-- 中央號碼（Lora 字體） -->
     <div class="big-wrap" aria-live="polite" aria-atomic="true">
-      <div id="bigNumber" class="number">0</div>
+      <div id="bigNumber" class="number">—</div>
     </div>
 
     <!-- 語音開關 -->
@@ -405,8 +405,9 @@ document.addEventListener('visibilitychange', ()=>{
 });
 
 /* ===== 抓號與顯示 ===== */
-const POLL_MS = 1000;
-const FETCH_TIMEOUT = 3000;
+const POLL_MS = 3000;
+const FETCH_TIMEOUT = 10000;
+const JSONP_TIMEOUT = 10000;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
 
 async function fetchJSON() {
@@ -424,21 +425,54 @@ function fetchJSONP() {
   return new Promise((resolve, reject) => {
     const cb = 'onClinicData_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
     const s = document.createElement('script');
-    const timeout = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 5000);
-    window[cb] = (data) => { cleanup(); resolve(data); };
-    function cleanup(){ clearTimeout(timeout); delete window[cb]; s.remove(); }
-    s.src = `${GAS_URL}?callback=${cb}&ts=${Date.now()}`;
-    s.onerror = () => { cleanup(); reject(new Error('JSONP load error')); };
-    document.head.appendChild(s);
+    let settled = false;
+    const timeout = setTimeout(() => finish(new Error('JSONP timeout')), JSONP_TIMEOUT);
+    function cleanup(){
+      clearTimeout(timeout);
+      s.onerror = null;
+      delete window[cb];
+      s.remove();
+    }
+    function finish(err, data){
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (err) reject(err); else resolve(data);
+    }
+    window[cb] = (data) => finish(null, data);
+    s.onerror = () => finish(new Error('JSONP load error'));
+    try {
+      s.src = `${GAS_URL}?callback=${cb}&ts=${Date.now()}`;
+      document.head.appendChild(s);
+    } catch (err) {
+      finish(err);
+    }
   });
+}
+
+function validateClinicData(data){
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('API 回傳資料格式無效');
+  }
+  const raw = data.number;
+  if ((typeof raw !== 'number' && typeof raw !== 'string') ||
+      (typeof raw === 'string' && raw.trim() === '')) {
+    throw new Error('API 未提供有效叫號');
+  }
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 0 || n >= 10000) {
+    throw new Error('API 叫號必須為 0–9999 的整數');
+  }
+  return { ...data, number: n };
 }
 
 async function fetchDataSmart() {
   try {
-    return await fetchJSON();
+    return validateClinicData(await fetchJSON());
   } catch (err) {
-    if (err && err.name === 'AbortError') throw err;
-    return await fetchJSONP();
+    // 包含 AbortError、HTTP 錯誤與無效資料，均嘗試 JSONP。
+    console.warn('叫號 fetch 失敗，改用 JSONP：', err);
+    return validateClinicData(await fetchJSONP());
   }
 }
 
@@ -459,31 +493,48 @@ function renderStatusPill(data){
 }
 
 let lastNumber = '';
-let requestSeq = 0;
+let lastSuccessfulData = null;
+let isLoading = false;
 function setBigNumber(nText){
   const el = document.getElementById('bigNumber');
   el.textContent = nText;
 }
 
+function renderConnectionStatus(){
+  // 保留最後成功的門診狀態，再加上連線提示。
+  renderStatusPill(lastSuccessfulData || {});
+  const message = lastSuccessfulData
+    ? '連線暫時異常，更新中...'
+    : '讀取叫號中...';
+  const el = document.createElement('div');
+  el.className = 'hex coral';
+  el.textContent = message;
+  document.getElementById('statusPill').appendChild(el);
+  srStatus.textContent = lastSuccessfulData
+    ? `${message}，最後成功看診號碼：${lastSuccessfulData.number}`
+    : message;
+}
+
 async function fetchNumber(){
-  const seq = ++requestSeq;
+  if (isLoading) return;
+  isLoading = true;
   try{
     const data = await fetchDataSmart();
-    if (seq !== requestSeq) return;
-    renderStatusPill(data);
-
-    const n = Number(data.number);
-    if (!Number.isFinite(n) || n < 0 || n >= 10000) return;
-
+    const n = data.number;
     const current = String(n);     // 不補 0
-    if(current !== lastNumber){
-      setBigNumber(current);
-      srStatus.textContent = `目前看診號碼：${current}`;
-      if (Voice.enabled) speakNumber(n);
-      lastNumber = current;
-    }
+    const changed = current !== lastNumber;
+    lastSuccessfulData = data;
+    lastNumber = current;
+    renderStatusPill(data);
+    setBigNumber(current);
+    srStatus.textContent = `目前看診號碼：${current}`;
+    if (changed && Voice.enabled) speakNumber(n);
   }catch(err){
-    // console.warn(err);
+    console.warn('叫號更新失敗，保留最後成功資料並繼續重試：', err);
+    if (lastSuccessfulData) setBigNumber(String(lastSuccessfulData.number));
+    renderConnectionStatus();
+  }finally{
+    isLoading = false;
   }
 }
 
@@ -516,10 +567,17 @@ function updateTWTime(){
 
 /* 啟動 */
 async function pollLoop(){
-  await fetchNumber();
-  const delay = document.hidden ? 5000 : POLL_MS;
-  setTimeout(pollLoop, delay);
+  try {
+    await fetchNumber();
+  } catch (err) {
+    console.error('叫號輪詢發生錯誤：', err);
+  } finally {
+    // 前一次請求（含 JSONP）結束後才安排下一次，避免請求重疊。
+    const delay = document.hidden ? 5000 : POLL_MS;
+    setTimeout(pollLoop, delay);
+  }
 }
+renderConnectionStatus();
 pollLoop();
 updateTWTime(); setInterval(updateTWTime, 1000);
 </script>
