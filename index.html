@@ -437,22 +437,27 @@ document.addEventListener('visibilitychange', ()=>{
 
 /* ===== 抓號與顯示 ===== */
 const POLL_MS = 3000;
-const FETCH_TIMEOUT = 10000;
-const JSONP_TIMEOUT = 10000;
+const REQUEST_TIMEOUT = 8000; // fetch 與 JSONP 共用的整輪等待上限
+const FETCH_TIMEOUT = REQUEST_TIMEOUT;
+const JSONP_TIMEOUT = REQUEST_TIMEOUT;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxHI3ypQqfqnEpXVDO6WJq0EQjkMWzjpIvosYGwu43MP9iiXjofRnZOzOnhAXedwCLw/exec";
 
-async function fetchJSON() {
+async function fetchJSON(signal) {
   const ctrl = new AbortController();
   const t = setTimeout(()=>ctrl.abort(), FETCH_TIMEOUT);
+  const cancel = () => { clearTimeout(t); ctrl.abort(); };
+  if (signal?.aborted) cancel();
+  else signal?.addEventListener('abort', cancel, { once:true });
   try {
     const res = await fetch(`${GAS_URL}?ts=${Date.now()}`, { cache:'no-store', signal: ctrl.signal });
     if(!res.ok) throw new Error(res.statusText);
     return await res.json();
   } finally {
     clearTimeout(t);
+    signal?.removeEventListener('abort', cancel);
   }
 }
-function fetchJSONP() {
+function fetchJSONP(signal) {
   return new Promise((resolve, reject) => {
     const cb = 'onClinicData_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
     const s = document.createElement('script');
@@ -460,6 +465,7 @@ function fetchJSONP() {
     const timeout = setTimeout(() => finish(new Error('JSONP timeout')), JSONP_TIMEOUT);
     function cleanup(){
       clearTimeout(timeout);
+      signal?.removeEventListener('abort', cancel);
       s.onerror = null;
       delete window[cb];
       s.remove();
@@ -470,8 +476,11 @@ function fetchJSONP() {
       cleanup();
       if (err) reject(err); else resolve(data);
     }
+    function cancel(){ finish(new DOMException('JSONP cancelled', 'AbortError')); }
     window[cb] = (data) => finish(null, data);
     s.onerror = () => finish(new Error('JSONP load error'));
+    if (signal?.aborted) { cancel(); return; }
+    signal?.addEventListener('abort', cancel, { once:true });
     try {
       s.src = `${GAS_URL}?callback=${cb}&ts=${Date.now()}`;
       document.head.appendChild(s);
@@ -497,14 +506,36 @@ function validateClinicData(data){
   return { ...data, number: n };
 }
 
-async function fetchDataSmart() {
-  try {
-    return validateClinicData(await fetchJSON());
-  } catch (err) {
-    // 包含 AbortError、HTTP 錯誤與無效資料，均嘗試 JSONP。
-    console.warn('叫號 fetch 失敗，改用 JSONP：', err);
-    return validateClinicData(await fetchJSONP());
-  }
+function fetchDataSmart() {
+  return new Promise((resolve, reject) => {
+    const ctrl = new AbortController();
+    let settled = false;
+    let failures = 0;
+    const timeout = setTimeout(() => {
+      finish(new Error('叫號請求超過 8 秒'));
+    }, REQUEST_TIMEOUT);
+    function finish(err, data){
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      // 取消尚未完成的 fetch，並清理 JSONP callback、script 與計時器。
+      ctrl.abort();
+      if (err) reject(err); else resolve(data);
+    }
+    function observe(request, label){
+      request.then(validateClinicData).then(data => {
+        finish(null, data);
+      }).catch(err => {
+        if (settled) return; // 忽略落敗請求與主動取消，不重複更新或報錯。
+        console.warn(`叫號 ${label} 失敗：`, err);
+        failures += 1;
+        if (failures === 2) finish(new Error('fetch 與 JSONP 均未取得有效叫號'));
+      });
+    }
+    // 同一輪立即啟動兩條請求；單一路徑失敗不影響另一條。
+    observe(fetchJSON(ctrl.signal), 'fetch');
+    observe(fetchJSONP(ctrl.signal), 'JSONP');
+  });
 }
 
 function renderStatusPill(data){
