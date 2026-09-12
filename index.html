@@ -17,18 +17,11 @@
 <meta property="og:url" content="https://tioar.github.io/Clinic_calling/">
 <meta property="og:locale" content="zh_TW">
 
-<!-- 本地楷體預載 - 移除 crossorigin -->
-<link rel="preload" href="./fonts/CwTeXKai.woff2" as="font" type="font/woff2">
-<link rel="preload" href="./fonts/TW-Kai.woff2"  as="font" type="font/woff2">
-
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- 本地 Lora 字體預載 - 移除 crossorigin -->
-<link rel="preload" href="fonts/Lora-Medium.woff2" as="font" type="font/woff2">
-<link rel="preload" href="fonts/Lora-Bold.woff2" as="font" type="font/woff2">
-
-<style>
+<!-- 本地字體在首屏繪製後啟用，先以系統備援字體顯示。 -->
+<style id="deferredFonts" media="not all">
 /* ===== 內嵌本地楷體 ===== */
 @font-face{
   font-family:"CwTeXKai";
@@ -60,25 +53,10 @@
   unicode-range: U+0030-0039, U+002D, U+003A, U+002F, U+0028, U+0029; /* 0-9 和 - : / ( ) */
 }
 
-/* 備用：如果本地字體載入失敗，使用 Google Fonts */
-@font-face{
-  font-family:"LoraFallback";
-  font-style:normal;
-  font-weight:400;
-  font-display:swap;
-  src: url("https://fonts.gstatic.com/s/lora/v35/0QIhMX1D_JOuMw_LIftO.woff2") format("woff2");
-  unicode-range: U+0030-0039, U+002D, U+003A, U+002F, U+0028, U+0029;
-}
+</style>
 
-@font-face{
-  font-family:"LoraFallback";
-  font-style:normal;
-  font-weight:700;
-  font-display:swap;
-  src: url("https://fonts.gstatic.com/s/lora/v35/0QIiMX1D_JOuO4xXDftO-K6j.woff2") format("woff2");
-  unicode-range: U+0030-0039, U+002D, U+003A, U+002F, U+0028, U+0029;
-}
-
+<!-- 基本版面 CSS 立即生效，不等待字體或圖片。 -->
+<style>
 /* ===== 顏色/字型變數 ===== */
 :root{
   --classic:#35579A;
@@ -265,7 +243,7 @@ body{
     </div>
 
     <!-- Logo -->
-    <img class="logo" id="clinicLogo" src="./logo1.jpg" alt="陳萬龍診所 LOGO">
+    <img class="logo" id="clinicLogo" data-src="./logo1.jpg" decoding="async" alt="陳萬龍診所 LOGO">
 
     <!-- 標題 & 時間 -->
     <div class="title-row"><h1 id="sectionTitle">目前看診號碼</h1></div>
@@ -301,7 +279,7 @@ body{
 
     <!-- 彩色條 + 門診表 -->
     <div class="palette" aria-hidden="true"></div>
-    <img class="schedule" id="scheduleImg" src="./schedule.png" alt="門診時間表">
+    <img class="schedule" id="scheduleImg" data-src="./schedule.png" loading="lazy" decoding="async" alt="門診時間表">
   </div>
 
 <script>
@@ -333,6 +311,32 @@ body{
       'https://raw.githubusercontent.com/tioar/Clinic_calling/main/schedule.png'
     ];
     let si=0; sch.onerror=function(){ if(si<schFallbacks.length){ this.src=schFallbacks[si++]; } else { this.style.display='none'; } };
+  }
+})();
+
+/* 首屏先繪製；不等待 window.load 或任何圖片／字體下載。 */
+(function(){
+  let started = false;
+  function loadVisualAssets(){
+    if (started) return;
+    started = true;
+    clearTimeout(safety);
+    // 此時圖片 onerror 備援已經綁定，原有備援順序不變。
+    for (const id of ['clinicLogo', 'scheduleImg']){
+      const img = document.getElementById(id);
+      if (img?.dataset.src){
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+      }
+    }
+    document.getElementById('deferredFonts').media = 'all';
+  }
+  // 背景 WebView 可能暫停 animation frame，提供一次性啟動備援。
+  const safety = setTimeout(loadVisualAssets, 1500);
+  if (typeof requestAnimationFrame === 'function'){
+    requestAnimationFrame(() => requestAnimationFrame(loadVisualAssets));
+  } else {
+    setTimeout(loadVisualAssets, 0);
   }
 })();
 
